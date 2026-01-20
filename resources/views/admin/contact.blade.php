@@ -4,7 +4,7 @@
 <div class="container-fluid">
     <div class="row mb-3">
         <div class="col">
-            <h4 class="page-title">Contact Messages</h4>
+            <h4 class="page-title">Contact Leads</h4>
         </div>
     </div>
 
