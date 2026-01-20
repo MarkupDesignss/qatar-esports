@@ -126,7 +126,8 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::resource('about', AboutSectionController::class);
     
     // Live stream
-    Route::resource('livestream', LiveStreamController::class);
+   Route::resource('livestream', LiveStreamController::class)
+    ->except(['show']);
 
         // Partners
     Route::resource('partners', PartnerController::class);
@@ -169,4 +170,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::resource('previous-works', PreviousWorkController::class);
 
     Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
+
+    Route::get('livestream/tournaments',[LiveStreamController::class, 'getTournaments'])->name('livestream.tournaments');
+
 });
