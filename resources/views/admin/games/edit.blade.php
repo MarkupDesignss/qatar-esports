@@ -32,8 +32,9 @@
                             <input type="text"
                                    name="name"
                                    value="{{ old('name', $game->name) }}"
-                                   class="form-control"
+                                   class="form-control @error('name') is-invalid @enderror"
                                    required>
+                            @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
                         {{-- Platform --}}

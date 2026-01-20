@@ -24,7 +24,7 @@ class GameController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'     => 'required|string|max:100',
+            'name'     => 'required|string|max:100|unique:games,name',
             'slug'     => 'nullable|unique:games,slug',
             'platform' => 'required|in:PC,Mobile,Console',
             'logo'     => 'nullable|image|max:2048',
@@ -57,7 +57,7 @@ class GameController extends Controller
     public function update(Request $request, Game $game)
     {
         $data = $request->validate([
-            'name'     => 'required|string|max:100',
+            'name'     => 'required|string|max:100|unique:games,name,' . $game->id,
             'slug'     => 'nullable|unique:games,slug,' . $game->id,
             'platform' => 'required|in:PC,Mobile,Console',
             'logo'     => 'nullable|image|max:2048',
