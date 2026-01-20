@@ -727,7 +727,7 @@
             <a href="{{ route('admin.contact.index') }}"
                class="nav-item {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-chat-dots"></i>
-                <span class="nav-label">Contact</span>
+                <span class="nav-label">Contact Leads</span>
             </a>
                         
             <a href="{{ route('admin.logo.index') }}"
