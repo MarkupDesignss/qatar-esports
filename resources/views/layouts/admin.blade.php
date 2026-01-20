@@ -717,6 +717,26 @@
                     <i class="nav-icon bi bi-trophy"></i>
                     <span class="nav-label">Tournaments</span>
             </a>
+
+            <div class="nav-item dropdown-sidebar {{ request()->is('admin/tournament-registrations/solo*','admin/tournament-registrations/team*') ? 'open' : '' }}">
+                
+                <a href="javascript:void(0)"
+                class="nav-link dropdown-toggle">
+                    <i class="nav-icon bi bi-speedometer2"></i>
+                    <span class="nav-label">Tournament Reg.</span>
+                    {{-- <i class="bi bi-chevron-down ms-auto"></i> --}}
+                </a>
+                <div class="dropdown-menu-sidebar">
+                    <a href="{{ route('admin.tournament-registrations.solo') }}"
+                        class="dropdown-item {{ request()->is('admin/tournament-registrations/solo*') ? 'active' : '' }}">
+                        Solo
+                    </a>
+                    <a href="{{ route('admin.tournament-registrations.team') }}"
+                        class="dropdown-item {{ request()->is('admin/tournament-registrations/team*') ? 'active' : '' }}">
+                        Team
+                    </a>
+                </div>
+            </div>
             
              <a href="{{ route('admin.livestream.index') }}"
                 class="nav-item {{ request()->routeIs('admin.livestream.*') ? 'active' : '' }}">

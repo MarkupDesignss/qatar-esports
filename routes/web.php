@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PreviousWorkController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\PartnerController;
 use App\Http\Controllers\Admin\NewsController;
+use App\Http\Controllers\Admin\TournamentRegistrationController;
 use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', function () {
@@ -159,7 +160,13 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::put('news/{id}', [NewsController::class, 'update'])->name('news.update');;
     Route::delete('news/delete/{id}', [NewsController::class, 'destroy'])->name('news.destroy');;
 
-
+    // Tournament Registrations
+    Route::get('tournament-registrations/solo', [TournamentRegistrationController::class, 'soloIndex'])->name('tournament-registrations.solo');
+    Route::get('tournament-registrations/solo/{tournamentId}', [TournamentRegistrationController::class, 'soloDetail'])->name('tournament-registrations.solo-detail');
+    Route::get('tournament-registrations/team', [TournamentRegistrationController::class, 'teamIndex'])->name('tournament-registrations.team');
+    Route::get('tournament-registrations/team/{tournamentId}', [TournamentRegistrationController::class, 'teamDetail'])->name('tournament-registrations.team-detail');
+    Route::get('tournament-registrations/{id}', [TournamentRegistrationController::class, 'show'])->name('tournament-registrations.show');
+   
     // Matches
     Route::resource('matches', MatchHighlightController::class);
     
