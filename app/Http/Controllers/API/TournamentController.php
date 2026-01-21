@@ -16,173 +16,6 @@ class TournamentController extends Controller
      * GET /api/tournaments
      * Query params: search, game, filter (e.g., NearMe), status
      */
-    
-
-
-// public function index(Request $request)
-// {
-//     $now  = now();
-//     $user = $request->user();
-
-//     /*
-//     |-------------------------------------------------
-//     | Base Query
-//     |-------------------------------------------------
-//     */
-//     $queryBuilder = Tournament::with('game')
-//         ->where('visibility', 'published')
-//         ->orderByDesc('is_featured')
-//         ->orderBy('start_date', 'asc');
-
-//     /*
-//     |-------------------------------------------------
-//     | Search by Title
-//     |-------------------------------------------------
-//     */
-//     if ($request->filled('query')) {
-//         $queryBuilder->where('title', 'like', '%' . $request->query('query') . '%');
-//     }
-
-//     /*
-//     |-------------------------------------------------
-//     | Filter Logic
-//     | - upcoming
-//     | - nearby
-//     | - game name (fallback)
-//     |-------------------------------------------------
-//     */
-//     if ($request->filled('filter')) {
-
-//         $filter = strtolower($request->filter);
-
-//         if ($filter === 'upcoming') {
-
-//             $queryBuilder->where('status', 'upcoming');
-
-//         } elseif ($filter === 'nearby') {
-
-//             if ($user && $user->location) {
-//                 $queryBuilder->where(
-//                     'location',
-//                     'like',
-//                     '%' . $user->location . '%'
-//                 );
-//             }
-
-//         } else {
-
-//             // 👇 Filter by GAME NAME
-//             $queryBuilder->whereHas('game', function ($q) use ($request) {
-//                 $q->where('name', 'like', '%' . $request->filter . '%');
-//             });
-//         }
-//     }
-
-//     /*
-//     |-------------------------------------------------
-//     | Fetch Data
-//     |-------------------------------------------------
-//     */
-//     $tournaments = $queryBuilder->get();
-
-//     /*
-//     |-------------------------------------------------
-//     | Transform Response
-//     |-------------------------------------------------
-//     */
-//     $response = $tournaments->map(function ($t) use ($now) {
-
-//         /*
-//         |---------------------------------------------
-//         | Start Datetime (Safe Carbon Parsing)
-//         |---------------------------------------------
-//         */
-//         $start = null;
-
-//         if ($t->start_date) {
-//             if (strlen($t->start_date) > 10) {
-//                 $start = Carbon::parse($t->start_date);
-//             } else {
-//                 $start = Carbon::parse(
-//                     $t->start_date . ' ' . ($t->start_time ?? '00:00:00')
-//                 );
-//             }
-//         }
-
-//         /*
-//         |---------------------------------------------
-//         | End Datetime
-//         |---------------------------------------------
-//         */
-//         $end = $t->end_date
-//             ? Carbon::parse($t->end_date)->endOfDay()
-//             : null;
-
-//         /*
-//         |---------------------------------------------
-//         | Dynamic Status
-//         |---------------------------------------------
-//         */
-//         if ($start && $end) {
-//             if ($now->lt($start)) {
-//                 $status_dynamic = 'upcoming';
-//             } elseif ($now->between($start, $end)) {
-//                 $status_dynamic = 'live';
-//             } else {
-//                 $status_dynamic = 'completed';
-//             }
-//         } else {
-//             $status_dynamic = $t->status;
-//         }
-
-//         /*
-//         |---------------------------------------------
-//         | Registration Open Logic
-//         |---------------------------------------------
-//         */
-//         $isRegistrationOpen = false;
-
-//         if ($t->registration_start || $t->registration_end) {
-//             $isRegistrationOpen = $now->between(
-//                 $t->registration_start
-//                     ? Carbon::parse($t->registration_start)->startOfDay()
-//                     : $now->copy()->subYears(5),
-//                 $t->registration_end
-//                     ? Carbon::parse($t->registration_end)->endOfDay()
-//                     : $now->copy()->addYears(5)
-//             );
-//         }
-
-//         return [
-//             'id' => $t->id,
-//             'image' => $t->banner ?? $t->logo,
-//             'title' => $t->title,
-//             'slug' => $t->slug,
-//             'format' => $t->format,
-//             'team_size' => $t->team_size,
-//             'location' => $t->location,
-//             'is_registration_open' => $isRegistrationOpen,
-//             'registration_start' => $t->registration_start,
-//             'registration_end' => $t->registration_end,
-//             'start_date' => $t->start_date,
-//             'end_date' => $t->end_date,
-//             'start_time' => $t->start_time,
-//             'attendees' => $t->registered_participants,
-//             'max_participants' => $t->max_participants,
-//             'is_featured' => $t->is_featured,
-//             'status' => $t->status,
-//             'status_dynamic' => $status_dynamic,
-//             'game' => $t->game ? [
-//                 'id' => $t->game->id,
-//                 'name' => $t->game->name,
-//                 'slug' => $t->game->slug,
-//                 'logo' => $t->game->logo,
-//             ] : null,
-//         ];
-//     });
-
-//     return response()->json($response);
-// }
 
 public function index(Request $request)
     {
@@ -475,6 +308,7 @@ public function index(Request $request)
      */
   public function show($id)
     {
+        $now  = now();
         $tournament = Tournament::with('game')->findOrFail($id);
 
         /**
@@ -513,6 +347,15 @@ public function index(Request $request)
             ->where('tournament_id', $tournament->id)
             ->count();
 
+        // Registration open logic
+        $isRegistrationOpen = false;
+            if ($tournament->registration_start || $tournament->registration_end) {
+                $isRegistrationOpen = $now->between(
+                    $tournament->registration_start ? Carbon::parse($tournament->registration_start)->startOfDay() : $now->copy()->subYears(5),
+                    $tournament->registration_end ? Carbon::parse($tournament->registration_end)->endOfDay() : $now->copy()->addYears(5)
+                );
+        }
+
         return response()->json([
             'tournament' => [
                 'id' => $tournament->id,
@@ -522,6 +365,12 @@ public function index(Request $request)
                 'rules' => $tournament->rules,
                 'logo' => $tournament->logo,
                 'banner' => $tournament->banner,
+                'is_registration_open' =>$isRegistrationOpen,
+                'registration_start' => $tournament->registration_start ?$tournament->registration_start->format('Y-m-d') : null,
+                'registration_end' =>$tournament->registration_end ? $tournament->registration_end->format('Y-m-d') : null,
+                'start_date' => $tournament->start_date ? $tournament->start_date->format('Y-m-d') : null,
+                'end_date' => $tournament->end_date ? $tournament->end_date->format('Y-m-d') : null,
+                'start_time' => $tournament->start_time,
                 'entry_fees' => $tournament->entry_fee,
                 'prize_pool' => $tournament->prize_pool,
                 'format' => $tournament->format,

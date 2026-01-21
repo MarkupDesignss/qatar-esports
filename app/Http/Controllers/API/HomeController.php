@@ -142,25 +142,6 @@ public function banners()
         ]);
     }
 
-    // public function matchHighlights()
-    // {
-    //     try {
-    //         $matches = MatchHighlight::select('thumbnail', 'title', 'video_url', 'video_title','description','created_at','type')->get();
-    //         // $matches = MatchHighlight::all();
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Matches fetched',
-    //             'matches' => $matches
-    //         ], 200);
-    //     } catch (\Throwable $th) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Something went wrong',
-    //             'error' => $th->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
     public function welcomeSection()
     {
         return response()->json([
@@ -344,31 +325,69 @@ public function services()
     }
 
     //Popular Live Games API
+    // public function popularLiveGames()
+    // {
+    //     $now = Carbon::now()->format('Y-m-d H:i:s');
+    //     $today = Carbon::today()->format('Y-m-d');
+
+    //     $games = Game::select('id', 'name', 'logo')
+    //         ->withCount([
+    //             'tournaments as live_count' => function ($q) use ($now, $today) {
+    //                 $q->whereRaw(
+    //                     "CONCAT(start_date, ' ', start_time) <= ?",
+    //                     [$now]
+    //                 )
+    //                 ->where('end_date', '>=', $today);
+    //             }
+    //         ])
+    //         ->orderByDesc('live_count')
+    //         ->get();
+
+    //     return response()->json(['data'=>$games]);
+    // }
+
     public function popularLiveGames()
     {
-        $now = Carbon::now()->format('Y-m-d H:i:s');
-        $today = Carbon::today()->format('Y-m-d');
+        $games = LiveStream::query()
+            ->where('is_live', 1)
 
-        $games = Game::select('id', 'name', 'logo')
-            ->withCount([
-                'tournaments as live_count' => function ($q) use ($now, $today) {
-                    $q->whereRaw(
-                        "CONCAT(start_date, ' ', start_time) <= ?",
-                        [$now]
-                    )
-                    ->where('end_date', '>=', $today);
-                }
-            ])
-            ->orderByDesc('live_count')
-            ->get();
+            // Tournament must be published
+            ->whereHas('tournament', function ($q) {
+                $q->where('visibility', 'published');
+            })
 
-        return response()->json(['data'=>$games]);
+            ->selectRaw('
+                game_id,
+                COUNT(id) as live_streams,
+                SUM(viewer_count) as total_viewers
+            ')
+            ->groupBy('game_id')
+            ->orderByDesc('total_viewers')
+
+            ->with('game:id,name,logo,banner')
+
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'id'            => $row->game?->id,
+                    'name'          => $row->game?->name,
+                    'logo'          => $row->game?->logo,
+                    'banner'          => $row->game?->banner,
+                    'live_streams'  => (int) $row->live_streams,
+                    'viewer_count'  => (int) $row->total_viewers,
+                ];
+            });
+
+        return response()->json([
+            'status' => true,
+            'data'   => $games
+        ]);
     }
+
 
     //Popular Live Streams API
     public function popularLiveStreams(Request $request)
     {
-        $now = Carbon::now();
         $gameId = $request->query('game_id'); // optional filter
 
         $streams = LiveStream::query()
@@ -379,23 +398,9 @@ public function services()
                 $q->where('game_id', $gameId);
             })
 
-            ->whereHas('tournament', function ($q) use ($now) {
-                $q->where('visibility', 'published')
-                ->whereRaw("
-                    ? >= CONCAT(
-                        DATE(start_date),
-                        ' ',
-                        IFNULL(start_time, '00:00:00')
-                    )
-                ", [$now->toDateTimeString()])
-                ->where(function ($q2) use ($now) {
-                    $q2->whereNull('end_date')
-                        ->orWhere('end_date', '>=', $now);
-                });
-            })
-
+            // Include related data
             ->with([
-                'tournament:id,title,slug,start_date,start_time,end_date,timezone',
+                'tournament:id,title,slug,status,timezone',
                 'game:id,name'
             ])
             ->orderByDesc('viewer_count')
@@ -425,5 +430,6 @@ public function services()
             })
         ]);
     }
+
 
 }
