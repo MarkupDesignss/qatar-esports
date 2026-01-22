@@ -3,54 +3,27 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ContactUsAdminMail extends Mailable implements ShouldQueue
+class ContactUsAdminMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public array $data;
+    public $data;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(array $data)
     {
         $this->data = $data;
     }
 
-    /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
+    public function build()
     {
-        return new Envelope(
-            subject: 'New Contact Us Request'
-        );
-    }
-
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
-    {
-        return new Content(
-            view: 'emails.contact_us_admin',
-            with: [
-                'data' => $this->data
-            ]
-        );
-    }
-
-    /**
-     * Get the attachments for the message.
-     */
-    public function attachments(): array
-    {
-        return [];
+        return $this->from(
+                env('MAIL_FROM_ADDRESS'),
+                env('MAIL_FROM_NAME')
+            )
+            ->subject('New Contact Us Request')
+            ->view('emails.contact_us_admin');
     }
 }

@@ -4,7 +4,7 @@
     <title>Password Reset OTP</title>
 </head>
 <body>
-    <h2>Admin Password Reset</h2>
+    <h2>Qatar Esports Password Reset</h2>
 
     <p>Your OTP for resetting the password is:</p>
 
@@ -15,6 +15,6 @@
     <p>If you did not request this, please ignore this email.</p>
 
     <br>
-    <p>Thanks,<br>Admin Team</p>
+    <p>Thanks,<br>Qatar Esports Team</p>
 </body>
 </html>
