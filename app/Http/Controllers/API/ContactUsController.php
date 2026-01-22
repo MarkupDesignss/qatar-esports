@@ -26,10 +26,10 @@ class ContactUsController extends Controller
 
         try {
             // Save to DB
-            $contact = ContactRequest::create($validated);
+            ContactRequest::create($validated);
 
-            // Send email to Admin (Queue recommended)
-            Mail::to(config('mail.support_email'))
+            // Send email to Admin (Mailgun-safe)
+            Mail::to(env('MAIL_FROM_ADDRESS'))
                 ->send(new ContactUsAdminMail($validated));
 
             // Success response
@@ -38,9 +38,9 @@ class ContactUsController extends Controller
                 'message' => 'Your request has been submitted successfully.'
             ], 201);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
 
-            // Log error (important)
+            // Log error
             Log::error('Contact Us API Error', [
                 'error' => $e->getMessage()
             ]);

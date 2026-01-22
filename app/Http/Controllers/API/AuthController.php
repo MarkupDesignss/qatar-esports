@@ -88,6 +88,7 @@ class AuthController extends Controller
     /**
      * FORGOT PASSWORD (EMAIL OTP)
      */
+
     public function forgotPassword(Request $request)
     {
         $request->validate([
@@ -112,14 +113,14 @@ class AuthController extends Controller
             'otp_expires_at' => now()->addMinutes(10),
         ]);
 
-        Mail::raw(
-            "Your password reset OTP is: {$otp}",
-            fn ($msg) => $msg->to($user->email)->subject('Password Reset OTP')
-        );
+        Mail::send('emails.admin-reset-otp', ['otp' => $otp], function ($message) use ($user) {
+            $message->to($user->email)
+                    ->from('qataresports.mailgun.org@mg.markupdesigns.net', 'Qatar Esports')
+                    ->subject('Qatar Esports Password Reset OTP');
+        });
 
         return response()->json([
             'success' => true,
-            'otp'            => $otp,
             'message' => 'OTP sent to email'
         ]);
     }
