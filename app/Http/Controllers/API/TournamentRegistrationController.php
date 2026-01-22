@@ -9,6 +9,8 @@ use App\Models\TournamentRegistration;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TournamentInviteMail;
 
 class TournamentRegistrationController extends Controller
 {
@@ -129,10 +131,17 @@ class TournamentRegistrationController extends Controller
         // Frontend invite URL
         //$tournamentSlug = Str::slug($tournament->title);
         $tournamentTitle = rawurlencode($tournament->title);
-       // $inviteUrl = 'https://www.markupdesigns.net/qec-web/tourmainpage/'
-        $inviteUrl = 'http://localhost:5173/qec-web/tourmainpage/'
-            . $tournamentTitle
-            . '?invite=' . $inviteCode;
+        $inviteUrl = 'https://www.markupdesigns.net/qec-web/tourmainpage/'.$tournamentTitle.'?invite=' . $inviteCode;
+
+
+        // SEND INVITE EMAIL (OPTIONAL BUT RECOMMENDED)
+        Mail::to($user->email)->send(
+            new TournamentInviteMail(
+                $inviteUrl,
+                $tournament->title,
+                $request->team_name
+            )
+        );
 
         return response()->json([
             'message' => 'Team created successfully',
@@ -166,8 +175,8 @@ class TournamentRegistrationController extends Controller
         //$tournamentSlug = Str::slug($tournament->title);
         $tournamentTitle = rawurlencode($tournament->title);
 
-        //$inviteUrl = 'https://www.markupdesigns.net/qec-web/tourmainpage/'
-        $inviteUrl = 'http://localhost:5173/qec-web/tourmainpage/'
+        $inviteUrl = 'https://www.markupdesigns.net/qec-web/tourmainpage/'
+        //$inviteUrl = 'http://localhost:5173/qec-web/tourmainpage/'
             . $tournamentTitle
             . '?invite=' . $registration->invite_link;
 
@@ -252,8 +261,8 @@ class TournamentRegistrationController extends Controller
         $tournament->increment('registered_participants');
 
         // Build full invite URL to send back
-        //$frontendBase = 'https://www.markupdesigns.net/qec-web/tourmainpage/';
-        $frontendBase = 'http://localhost:5173/qec-web/tourmainpage/';
+        $frontendBase = 'https://www.markupdesigns.net/qec-web/tourmainpage/';
+        //$frontendBase = 'http://localhost:5173/qec-web/tourmainpage/';
         $fullInviteUrl = $frontendBase . urlencode($tournament->name) . '?invite=' . $registration->invite_link;
 
         // Response
@@ -301,8 +310,8 @@ class TournamentRegistrationController extends Controller
                         $status = 'ongoing';
                     }
 
-                    //$inviteUrl = 'https://www.markupdesigns.net/qec-web/tourmainpage/'
-                    $inviteUrl = 'http://localhost:5173/qec-web/tourmainpage/'
+                     $inviteUrl = 'https://www.markupdesigns.net/qec-web/tourmainpage/'
+                    //$inviteUrl = 'http://localhost:5173/qec-web/tourmainpage/'
                     . $tournament->title
                     . '?invite=' . $registration->invite_link;
 
@@ -525,7 +534,7 @@ class TournamentRegistrationController extends Controller
                 ],
 
                 'invite_link' => $team->invite_link
-                    ? 'http://localhost:5173/qec-web/tourmainpage/' .
+                    ? 'https://www.markupdesigns.net/qec-web/tourmainpage/' .
                         rawurlencode($tournament->title) .
                         '?invite=' . $team->invite_link
                     : null,
@@ -644,7 +653,7 @@ public function myHistory(Request $request)
                     ],
 
                     'invite_link' => $team->invite_link
-                        ? 'http://localhost:5173/qec-web/tourmainpage/' .
+                        ? 'https://www.markupdesigns.net/qec-web/tourmainpage/' .
                         rawurlencode($tournament->title) .
                         '?invite=' . $team->invite_link
                         : null,
