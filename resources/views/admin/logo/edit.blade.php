@@ -10,7 +10,7 @@
     </div>
 @endif
 
-    <h4 class="mb-4 fw-bold">Edit Logo</h4>
+    <h4 class="mb-0 h5 h4-sm fw-bold text-gray-800">Edit Logo</h4>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>

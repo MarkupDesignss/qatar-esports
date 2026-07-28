@@ -23,10 +23,11 @@ class ChallengeController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'welcome_heading'   => 'required|string|max:255',
             'heading'   => 'required|string|max:255',
             'content'   => 'required|string',
-            'image'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image'     => 'nullable|image|mimes:jpg,jpeg,png,webp',
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp',
             'video_url' => 'nullable|url',
         ]);
 
@@ -56,10 +57,11 @@ class ChallengeController extends Controller
         $challenge = Challenge::findOrFail($id);
 
         $data = $request->validate([
+            'welcome_heading'   => 'required|string|max:255',
             'heading'   => 'required|string|max:255',
             'content'   => 'required|string',
-            'image'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image'     => 'nullable|image|mimes:jpg,jpeg,png,webp',
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp',
             'video_url' => 'nullable|url',
         ]);
 

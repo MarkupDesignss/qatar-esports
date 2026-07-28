@@ -19,6 +19,7 @@ class User extends Authenticatable
         'last_name',
         'username',
         'email',
+        'country_code',
         'mobile',
         'password',
         'otp',
@@ -48,9 +49,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(TournamentRegistration::class,'user_id');
     }
-public function profile()
-{
-    return $this->hasOne(UserProfile::class);
-}
+    
+    public function profile()
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+    
+    public function socialLinks()
+    {
+        return $this->hasOne(UserSocialLink::class, 'user_id');
+    }
 
 }

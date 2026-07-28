@@ -9,21 +9,32 @@ use App\Mail\AdminResetOtpMail;
 use App\Models\CatalogCategory;
 use App\Models\CatalogItem;
 use App\Models\User;
+use App\Models\Tournament;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
-
+use App\Models\Game;
 
 class AdminController extends Controller
 {
 
-    public function dashboard()
+    // public function dashboard()
+    // {
+    //     $data = [
+    //         'activeUsers'   => User::where('status', '1')->count(),
+    //         'inactiveUsers' => User::where('status', '0')->count(),
+    //     ];
+    //     return view('admin.dashboard', $data);
+    // }
+        public function dashboard()
     {
         $data = [
             'activeUsers'   => User::where('status', '1')->count(),
-            'inactiveUsers' => User::where('status', '0')->count(),
+            'games'   => Game::where('status', '1')->count(),
+           'tournaments' => Tournament::count(),
         ];
         return view('admin.dashboard', $data);
     }
@@ -177,5 +188,36 @@ class AdminController extends Controller
 
         return redirect()->route('admin.login')
             ->with('success', 'Password reset successfully');
+    }
+
+    /**
+     * Update admin profile (name, email, password)
+     */
+    public function updateProfile(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:admins,email,' . $admin->id,
+            'password' => 'nullable|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput()->with('show_profile_modal', true);
+        }
+
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        Admin::where('id', $admin->id)->update($data);
+
+        return back()->with('success', 'Profile updated successfully');
     }
 }

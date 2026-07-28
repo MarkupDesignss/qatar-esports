@@ -16,11 +16,16 @@ class TournamentRegistration extends Model
         'name',
         'email',
         'phone',
+        'status',
         'team_name',
         'team_tag',
         'team_logo',
         'is_captain',
         'invite_link',
+         'prize_rank',
+        'prize_amount',
+        'prize_distributed_at',
+        'is_prize_claimed',
     ];
 
     protected $casts = [
@@ -40,4 +45,9 @@ class TournamentRegistration extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
+    public function team()
+{
+    return $this->belongsTo(Team::class, 'team_id'); // adjust foreign key if needed
+}
 }

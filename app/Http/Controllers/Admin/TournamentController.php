@@ -4,49 +4,99 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tournament;
+use App\Models\TournamentRegistration;
 use App\Models\Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 
 class TournamentController extends Controller
 {
-    // public function index()
-    // {
-    //     $tournaments = Tournament::with('game')
-    //         ->latest()
-    //         ->paginate(10);
 
-    //     $stats = [
-    //         'total'     => Tournament::count(),
-    //         'live'      => Tournament::where('status', 'live')->count(),
-    //         'upcoming'  => Tournament::where('status', 'upcoming')->count(),
-    //         'featured'  => Tournament::where('is_featured', 1)->count(),
-    //     ];
-
-    //     return view('admin.tournaments.index', compact('tournaments', 'stats'));
-    // }
-
-    public function index()
+    public function index(Request $request)
     {
         $now = Carbon::now();
 
-        $tournaments = Tournament::with('game')->latest()->paginate(10);
+        // Fetch filter inputs
+        $format = $request->input('format'); // 'solo' or 'team'
+        $status = $request->input('status'); // 'upcoming', 'live', 'past' (optional)
+        // date range filters (accepts date_from/date_to or start_date/end_date)
+        $dateFrom = $request->input('date_from') ?? $request->input('start_date');
+        $dateTo = $request->input('date_to') ?? $request->input('end_date');
+
+        // Build base query for listing
+        $listQuery = Tournament::with('game');
+
+        if (!empty($format)) {
+            $listQuery->where('format', $format);
+        }
+
+        if (!empty($status)) {
+            if ($status === 'upcoming') {
+                $listQuery->where('start_date', '>', $now);
+            } elseif ($status === 'live') {
+                $listQuery->where('start_date', '<=', $now)->where('end_date', '>=', $now);
+            } elseif ($status === 'past' || $status === 'finished') {
+                $listQuery->where('end_date', '<', $now);
+            }
+        }
+
+        if (!empty($dateFrom)) {
+            try {
+                $from = Carbon::parse($dateFrom)->startOfDay();
+                $listQuery->where('start_date', '>=', $from);
+            } catch (\Exception $e) {
+                // ignore invalid date
+            }
+        }
+
+        if (!empty($dateTo)) {
+            try {
+                $to = Carbon::parse($dateTo)->endOfDay();
+                $listQuery->where('end_date', '<=', $to);
+            } catch (\Exception $e) {
+                // ignore invalid date
+            }
+        }
+
+        $tournaments = $listQuery->latest()->paginate(10)->appends($request->except('page'));
+
+        // Build a separate base query for stats with same filters
+        $statsBase = Tournament::query();
+        if (!empty($format)) {
+            $statsBase->where('format', $format);
+        }
+        if (!empty($status)) {
+            if ($status === 'upcoming') {
+                $statsBase->where('start_date', '>', $now);
+            } elseif ($status === 'live') {
+                $statsBase->where('start_date', '<=', $now)->where('end_date', '>=', $now);
+            } elseif ($status === 'past' || $status === 'finished') {
+                $statsBase->where('end_date', '<', $now);
+            }
+        }
+        if (!empty($dateFrom)) {
+            try {
+                $from = Carbon::parse($dateFrom)->startOfDay();
+                $statsBase->where('start_date', '>=', $from);
+            } catch (\Exception $e) {
+            }
+        }
+        if (!empty($dateTo)) {
+            try {
+                $to = Carbon::parse($dateTo)->endOfDay();
+                $statsBase->where('end_date', '<=', $to);
+            } catch (\Exception $e) {
+            }
+        }
 
         $stats = [
-            'total' => Tournament::count(),
-
-            'upcoming' => Tournament::whereDate('start_date', '>', $now)->count(),
-
-            'live' => Tournament::whereDate('start_date', '<=', $now)
-                ->where(function ($q) use ($now) {
-                    $q->whereNull('end_date')
-                      ->orWhereDate('end_date', '>=', $now);
-                })
-                ->count(),
-
-            'featured' => Tournament::where('is_featured', 1)->count(),
+            'total' => (clone $statsBase)->count(),
+            'upcoming' => (clone $statsBase)->where('start_date', '>', $now)->count(),
+            'live' => (clone $statsBase)->where('start_date', '<=', $now)->where('end_date', '>=', $now)->count(),
+            'featured' => (clone $statsBase)->where('is_featured', 1)->count(),
         ];
 
         return view('admin.tournaments.index', compact('tournaments', 'stats'));
@@ -59,31 +109,36 @@ class TournamentController extends Controller
         return view('admin.tournaments.create', compact('games'));
     }
 
+
     public function store(Request $request)
     {
         $data = $request->validate([
             'game_id'              => 'required|exists:games,id',
             'title'                => 'required|string|max:191',
             'slug'                 => 'nullable|unique:tournaments,slug',
-            'logo'                 => 'nullable|image|max:2048',
+            'logo'                 => 'nullable|image',
             'banner'               => 'nullable|image|max:4096',
             'location'             => 'nullable|string|max:191',
             'format'               => 'required|in:solo,team',
             'team_size'            => 'nullable|integer|min:1',
             'visibility'           => 'required|in:draft,published,archived',
             'is_featured'          => 'boolean',
-            //'is_registration_open' => 'boolean',
+            'allow_pdf_download'   => 'boolean',
+
+            // datetime-local fields
             'registration_start'   => 'required|date',
-            'registration_end'     => 'required|date|after_or_equal:registration_start',
+            'registration_end'     => 'required|date|after:registration_start',
             'start_date'           => 'required|date',
-            'start_time'           => 'required|date_format:H:i',
-            'end_date'             => 'required|date|after_or_equal:start_date',
-            //'timezone'             => 'nullable|string|max:191',
+            'end_date'             => 'required|date|after:start_date',
+
             'entry_fee'            => 'required|numeric|min:0',
             'prize_pool'           => 'required|numeric|min:0',
             'max_participants'     => 'nullable|integer|min:1',
             'description'          => 'nullable|string',
             'rules'                => 'nullable|string',
+            'social_links'         => 'nullable|array',
+            'social_links.*'       => 'nullable|url|max:255',
+            'stream_url'           => 'nullable|url|max:255',
         ]);
 
         /* ---------- Slug Handling ---------- */
@@ -93,27 +148,15 @@ class TournamentController extends Controller
             $data['slug'] = $count ? "{$slug}-" . ($count + 1) : $slug;
         }
 
-        /* ---------- Checkbox Defaults ---------- */
+        /* ---------- Checkbox ---------- */
         $data['is_featured'] = $request->boolean('is_featured');
-        //$data['is_registration_open'] = $request->boolean('is_registration_open');
+        $data['allow_pdf_download'] = $request->boolean('allow_pdf_download');
 
-        /* ---------- Status Auto Calculation ---------- */
-        // $now = Carbon::now();
-
-        // if ($data['start_date']) {
-        //     $start = Carbon::parse($data['start_date']);
-        //     $end   = $data['end_date'] ? Carbon::parse($data['end_date']) : null;
-
-        //     if ($start->isFuture()) {
-        //         $data['status'] = 'upcoming';
-        //     } elseif ($end && $end->isPast()) {
-        //         $data['status'] = 'completed';
-        //     } else {
-        //         $data['status'] = 'live';
-        //     }
-        // } else {
-        //     $data['status'] = 'upcoming';
-        // }
+        /* ---------- Datetime Handling (IMPORTANT) ---------- */
+        $data['registration_start'] = Carbon::parse($data['registration_start']);
+        $data['registration_end']   = Carbon::parse($data['registration_end']);
+        $data['start_date']         = Carbon::parse($data['start_date']);
+        $data['end_date']           = Carbon::parse($data['end_date']);
 
         $data['created_by'] = auth()->id();
 
@@ -126,6 +169,22 @@ class TournamentController extends Controller
             $data['banner'] = $request->file('banner')->store('tournaments', 'public');
         }
 
+        $socialLinks = $request->input('social_links', []);
+        $data['social_links'] = array_filter($socialLinks, function ($value) {
+            return !empty($value);  // removes null, '', false, 0, etc.
+        });
+
+        // If you want to keep only specific platforms (optional):
+        // $allowedPlatforms = ['youtube', 'twitch', 'instagram', 'facebook', 'discord', 'tiktok', 'twitter'];
+        // $data['social_links'] = array_intersect_key($data['social_links'], array_flip($allowedPlatforms));
+
+        // If no links remain, set to null (so JSON column stores NULL)
+        $data['social_links'] = empty($data['social_links']) ? null : $data['social_links'];
+
+        // Store stream_url as-is
+        $data['stream_url'] = $request->input('stream_url');
+
+        /* ---------- Save ---------- */
         Tournament::create($data);
 
         return redirect()
@@ -133,9 +192,26 @@ class TournamentController extends Controller
             ->with('success', 'Tournament created successfully.');
     }
 
+
+    // public function edit(Tournament $tournament)
+    // {
+    //     $games = Game::orderBy('name')->get();
+    //     return view('admin.tournaments.edit', compact('tournament', 'games'));
+    // }
     public function edit(Tournament $tournament)
     {
+        // Prevent editing after registration has closed
+        // if (
+        //     !$tournament->is_registration_open ||
+        //     now()->greaterThan($tournament->registration_end)
+        // ) {
+        //     return redirect()
+        //         ->route('admin.tournaments.index')
+        //         ->with('error', 'Tournament cannot be updated after registration has closed.');
+        // }
+
         $games = Game::orderBy('name')->get();
+
         return view('admin.tournaments.edit', compact('tournament', 'games'));
     }
 
@@ -145,35 +221,56 @@ class TournamentController extends Controller
             'game_id'              => 'nullable|exists:games,id',
             'title'                => 'required|string|max:191',
             'slug'                 => 'nullable|unique:tournaments,slug,' . $tournament->id,
-            'logo'                 => 'nullable|image|max:2048',
+            'logo'                 => 'nullable|image',
             'banner'               => 'nullable|image|max:4096',
             'location'             => 'nullable|string|max:191',
             'format'               => 'nullable|in:solo,team',
-            'team_size'            => 'nullable|integer',
-            //'status'               => 'required|in:upcoming,live,completed',
+            'team_size'            => 'nullable|integer|min:1',
             'visibility'           => 'required|in:draft,published,archived',
             'is_featured'          => 'sometimes|boolean',
-            //'is_registration_open' => 'sometimes|boolean',
+            'allow_pdf_download'   => 'sometimes|boolean',
+
+            // datetime fields
             'registration_start'   => 'nullable|date',
-            'registration_end'     => 'nullable|date|after_or_equal:registration_start',
+            'registration_end'     => 'nullable|date|after:registration_start',
             'start_date'           => 'nullable|date',
-            'end_date'             => 'nullable|date|after_or_equal:start_date',
-            'start_time'           => 'nullable',
-            //'timezone'             => 'nullable|string|max:191',
+            'end_date'             => 'nullable|date|after:start_date',
+
             'entry_fee'            => 'nullable|numeric|min:0',
             'prize_pool'           => 'nullable|numeric|min:0',
             'max_participants'     => 'nullable|integer|min:1',
             'description'          => 'nullable|string',
             'rules'                => 'nullable|string',
+            'social_links'         => 'nullable|array',
+            'social_links.*'       => 'nullable|url|max:255',
+            'stream_url'           => 'nullable|url|max:255',
         ]);
 
+        /* ---------- Slug ---------- */
         $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
 
-        // Checkbox fix: agar unchecked ho to false save kare
-        $data['is_featured'] = $request->has('is_featured') ? 1 : 0;
-        //$data['is_registration_open'] = $request->has('is_registration_open') ? 1 : 0;
+        /* ---------- Checkbox ---------- */
+        $data['is_featured'] = $request->boolean('is_featured');
+        $data['allow_pdf_download'] = $request->boolean('allow_pdf_download');
 
-        // File handling
+        /* ---------- Datetime Handling ---------- */
+        if (!empty($data['registration_start'])) {
+            $data['registration_start'] = Carbon::parse($data['registration_start']);
+        }
+
+        if (!empty($data['registration_end'])) {
+            $data['registration_end'] = Carbon::parse($data['registration_end']);
+        }
+
+        if (!empty($data['start_date'])) {
+            $data['start_date'] = Carbon::parse($data['start_date']);
+        }
+
+        if (!empty($data['end_date'])) {
+            $data['end_date'] = Carbon::parse($data['end_date']);
+        }
+
+        /* ---------- File Handling ---------- */
         if ($request->hasFile('logo')) {
             if ($tournament->logo) {
                 Storage::disk('public')->delete($tournament->logo);
@@ -187,21 +284,6 @@ class TournamentController extends Controller
             }
             $data['banner'] = $request->file('banner')->store('tournaments', 'public');
         }
-
-        // Optional: status auto-update based on date/time
-        // if ($data['start_date'] && $data['end_date']) {
-        //     $now = now();
-        //     $startDateTime = $data['start_date'] . ' ' . ($data['start_time'] ?? '00:00:00');
-        //     $endDateTime = $data['end_date'] . ' 23:59:59';
-
-        //     if ($now->lt($startDateTime)) {
-        //         $data['status'] = 'upcoming';
-        //     } elseif ($now->between($startDateTime, $endDateTime)) {
-        //         $data['status'] = 'live';
-        //     } else {
-        //         $data['status'] = 'completed';
-        //     }
-        // }
 
         $tournament->update($data);
 
@@ -237,5 +319,64 @@ class TournamentController extends Controller
         ]);
 
         return back()->with('success', 'Visibility updated.');
+    }
+
+    public function exportParticipants($id)
+    {
+        $tournament = Tournament::findOrFail($id);
+
+        // Fetch all registrations for this tournament with user details
+        $registrations = TournamentRegistration::with('user')
+            ->where('tournament_id', $id)
+            ->get();
+
+        if ($registrations->isEmpty()) {
+            return back()->with('error', 'No participants found for this tournament.');
+        }
+
+        // Prepare CSV headers
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $tournament->title . '_participants_' . date('Y-m-d') . '.csv"',
+        ];
+
+        // Prepare CSV columns
+        $columns = [
+            'Registration ID',
+            'Participant Name',
+            'Email',
+            'Phone',
+            'Type',
+            'Team Name',
+            'Team Tag',
+            'Status',
+            'Registered At'
+        ];
+
+        // Callback to generate CSV
+        $callback = function () use ($registrations, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($registrations as $reg) {
+                $user = $reg->user;
+
+                fputcsv($file, [
+                    $reg->id,
+                    $user ? trim($user->first_name . ' ' . $user->last_name) : $reg->name,
+                    $user ? $user->email : $reg->email,
+                    $user ? $user->mobile : $reg->phone,
+                    ucfirst($reg->type),
+                    $reg->team_name ?? 'N/A',
+                    $reg->team_tag ?? 'N/A',
+                    $reg->status == 1 ? 'Active' : 'Inactive',
+                    $reg->created_at ? $reg->created_at->format('d M Y, h:i A') : 'N/A'
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return Response::stream($callback, 200, $headers);
     }
 }

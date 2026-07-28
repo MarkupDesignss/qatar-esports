@@ -14,6 +14,16 @@ class LogoController extends Controller
         $logo = Logo::first();
         return view('admin.logo.index', compact('logo'));
     }
+    public function adminIndex()
+    {
+        $logo = Logo::first();
+        return view('layouts.admin', compact('logo'));
+    }
+    public function authIndex()
+    {
+        $logo = Logo::first();
+        return view('admin.login', compact('logo'));
+    }
 
     public function edit()
     {

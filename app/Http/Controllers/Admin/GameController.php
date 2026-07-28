@@ -12,7 +12,7 @@ class GameController extends Controller
 {
     public function index()
     {
-        $games = Game::latest()->paginate(10);
+        $games = Game::withCount('tournaments')->latest()->paginate(10);
         return view('admin.games.index', compact('games'));
     }
 
@@ -26,24 +26,31 @@ class GameController extends Controller
         $data = $request->validate([
             'name'     => 'required|string|max:100|unique:games,name',
             'slug'     => 'nullable|unique:games,slug',
-            'platform' => 'required|in:PC,Mobile,Console',
+            'platform' => 'required|in:PC,Mobile,Console,other',
             'logo'     => 'nullable|image|max:2048',
             'banner'   => 'nullable|image|max:4096',
             'status'   => 'required|boolean',
         ]);
-
+    
+        if ($data['platform'] === 'other') {
+            $request->validate([
+                'custom_platform' => 'required|string|max:255',
+            ]);
+            $data['platform'] = $request->custom_platform;
+        }
+    
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
-
+    
         if ($request->hasFile('logo')) {
             $data['logo'] = $request->file('logo')->store('games', 'public');
         }
-
+    
         if ($request->hasFile('banner')) {
             $data['banner'] = $request->file('banner')->store('games', 'public');
         }
-
+    
         Game::create($data);
-
+    
         return redirect()
             ->route('admin.games.index')
             ->with('success', 'Game created successfully.');
@@ -59,30 +66,37 @@ class GameController extends Controller
         $data = $request->validate([
             'name'     => 'required|string|max:100|unique:games,name,' . $game->id,
             'slug'     => 'nullable|unique:games,slug,' . $game->id,
-            'platform' => 'required|in:PC,Mobile,Console',
+            'platform' => 'required|in:PC,Mobile,Console,other',
             'logo'     => 'nullable|image|max:2048',
             'banner'   => 'nullable|image|max:4096',
             'status'   => 'required|boolean',
         ]);
-
+    
+        if ($data['platform'] === 'other') {
+            $request->validate([
+                'custom_platform' => 'required|string|max:255',
+            ]);
+            $data['platform'] = $request->custom_platform;
+        }
+    
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
-
+    
         if ($request->hasFile('logo')) {
             if ($game->logo) {
                 Storage::disk('public')->delete($game->logo);
             }
             $data['logo'] = $request->file('logo')->store('games', 'public');
         }
-
+    
         if ($request->hasFile('banner')) {
             if ($game->banner) {
                 Storage::disk('public')->delete($game->banner);
             }
             $data['banner'] = $request->file('banner')->store('games', 'public');
         }
-
+    
         $game->update($data);
-
+    
         return redirect()
             ->route('admin.games.index')
             ->with('success', 'Game updated successfully.');

@@ -22,6 +22,7 @@ class AuthController extends Controller
                 'lastName'  => 'nullable|string|max:255',
                 'username'  => 'nullable|string|unique:users,username',
                 'email'     => 'required|email|unique:users,email',
+                'country_code' => 'nullable|string|max:10',
                 'mobile'    => 'required|string|unique:users,mobile',
                 'password'  => 'required|min:6',
             ]);
@@ -31,6 +32,7 @@ class AuthController extends Controller
                 'last_name'  => $validated['lastName'] ?? null,
                 'username'   => $validated['username'] ?? null,
                 'email'      => $validated['email'],
+                'country_code'     => $validated['country_code'],
                 'mobile'     => $validated['mobile'],
                 'password'   => Hash::make($validated['password']),
             ]);
@@ -65,14 +67,26 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)
-            ->where('status', 1)
             ->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+         if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid email or password',
-                //'errors'  => $e->errors()
+                'message' => 'Invalid email address'
+            ], 422);
+        }
+         if ($user->status != 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Account is inactive, kindly contact to admin.'
+            ], 422);
+        }
+    
+        // Check password
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Incorrect password.'
             ], 422);
         }
 
