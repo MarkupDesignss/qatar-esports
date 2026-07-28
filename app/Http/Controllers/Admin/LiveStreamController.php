@@ -25,7 +25,7 @@ class LiveStreamController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'tournament_id' => 'required|exists:tournaments,id',
+            'tournament_id' => 'nullable|exists:tournaments,id',
             'game_id'       => 'required|exists:games,id',
             'platform'      => 'required|string|max:100',
             'channel_name'  => 'required|string|max:255',
@@ -55,7 +55,7 @@ class LiveStreamController extends Controller
     {
         $liveStream = LiveStream::find($id);
         $request->validate([
-            'tournament_id' => 'required|exists:tournaments,id',
+            'tournament_id' => 'nullable|exists:tournaments,id',
             'game_id'       => 'required|exists:games,id',
             'platform'      => 'required|string|max:100',
             'channel_name'  => 'required|string|max:255',

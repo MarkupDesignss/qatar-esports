@@ -1,75 +1,228 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="container">
+<div class="container-fluid px-2 px-sm-3 px-md-4 py-4">
 
     @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Please fix the following errors:</strong>
+            <ul class="mb-0 mt-2 ps-3">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
-    <h3 style="font-size: 1.7rem;font-weight:600;">Edit Challenge</h3>
-
-    <form action="{{ route('admin.challenge.update', $challenge->id) }}"
-          method="POST"
-          enctype="multipart/form-data">
-        @csrf
-        @method('PUT')
-
-        <div class="mb-3">
-            <label class="form-label">Heading</label>
-            <input type="text"
-                   name="heading"
-                   value="{{ old('heading', $challenge->heading) }}"
-                   class="form-control"
-                   required>
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-2 py-sm-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+                <h4 class="mb-0 h5 h4-sm fw-bold text-gray-800">
+                    <i class="bi bi-pencil-square me-2 text-primary"></i>Edit Challenge
+                </h4>
+                <a href="{{ route('admin.challenge.index') }}" class="btn btn-secondary btn-sm  w-sm-auto">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                </a>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Content</label>
-            <textarea name="content"
-                      rows="5"
-                      class="form-control"
-                      required>{{ old('content', $challenge->content) }}</textarea>
-        </div>
+        <div class="card-body p-3 p-sm-4">
+            <form action="{{ route('admin.challenge.update', $challenge->id) }}"
+                  method="POST"
+                  enctype="multipart/form-data"
+                  novalidate>
+                @csrf
+                @method('PUT')
 
-        {{-- Image --}}
-        <div class="mb-3">
-            <label class="form-label">Image</label>
-            <input type="file" name="image" class="form-control">
-            @if($challenge->image)
-                <div class="mt-2">
-                    <img src="{{ asset('storage/'.$challenge->image) }}" width="120">
+                <div class="row g-3">
+                    <div class="col-12 col-lg-8">
+
+                        {{-- Welcome Heading --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Welcome Heading <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   name="welcome_heading"
+                                   value="{{ old('welcome_heading', $challenge->welcome_heading) }}"
+                                   class="form-control form-control-lg @error('welcome_heading') is-invalid @enderror"
+                                   placeholder="Enter welcome heading"
+                                   required>
+                            @error('welcome_heading')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Heading --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Heading <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   name="heading"
+                                   value="{{ old('heading', $challenge->heading) }}"
+                                   class="form-control form-control-lg @error('heading') is-invalid @enderror"
+                                   placeholder="Enter main heading"
+                                   required>
+                            @error('heading')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Content --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Content <span class="text-danger">*</span></label>
+                            <textarea name="content"
+                                      id="content"
+                                      rows="5"
+                                      class="form-control @error('content') is-invalid @enderror"
+                                      placeholder="Enter challenge content"
+                                      required>{{ old('content', $challenge->content) }}</textarea>
+                            @error('content')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                    </div>
+
+                    {{-- Right Side --}}
+                    <div class="col-12 col-lg-4">
+                        <div class="card border shadow-sm">
+                            <div class="card-body p-3 p-sm-4">
+
+                                {{-- Image --}}
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Image</label>
+                                    <input type="file" 
+                                           name="image" 
+                                           class="form-control @error('image') is-invalid @enderror" 
+                                           accept="image/*">
+                                    @error('image')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    @if($challenge->image)
+                                        <div class="mt-2">
+                                            <label class="form-label small text-muted">Current Image:</label>
+                                            <div class="border rounded p-2 bg-light">
+                                                <img src="{{ asset('storage/'.$challenge->image) }}" 
+                                                     class="img-fluid rounded"
+                                                     style="max-height: 100px; width: auto; object-fit: contain;">
+                                            </div>
+                                        </div>
+                                    @endif
+                                    <small class="text-muted d-block mt-1">Leave empty to keep current</small>
+                                </div>
+
+                                {{-- Thumbnail --}}
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Thumbnail</label>
+                                    <input type="file" 
+                                           name="thumbnail" 
+                                           class="form-control @error('thumbnail') is-invalid @enderror" 
+                                           accept="image/*">
+                                    @error('thumbnail')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    @if($challenge->thumbnail)
+                                        <div class="mt-2">
+                                            <label class="form-label small text-muted">Current Thumbnail:</label>
+                                            <div class="border rounded p-2 bg-light">
+                                                <img src="{{ asset('storage/'.$challenge->thumbnail) }}" 
+                                                     class="img-fluid rounded"
+                                                     style="max-height: 80px; width: auto; object-fit: contain;">
+                                            </div>
+                                        </div>
+                                    @endif
+                                    <small class="text-muted d-block mt-1">Leave empty to keep current</small>
+                                </div>
+
+                                {{-- Video URL --}}
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Video URL</label>
+                                    <input type="url"
+                                           name="video_url"
+                                           value="{{ old('video_url', $challenge->video_url) }}"
+                                           class="form-control @error('video_url') is-invalid @enderror"
+                                           placeholder="https://www.youtube.com/watch?v=...">
+                                    @error('video_url')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    @if($challenge->video_url)
+                                        <div class="mt-1">
+                                            <a href="{{ $challenge->video_url }}" target="_blank" class="text-decoration-none small">
+                                                <i class="bi bi-link-45deg"></i> Current Video
+                                            </a>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                {{-- Preview --}}
+                                <div class="mb-3 text-center">
+                                    <label class="form-label fw-semibold d-block">New Image Preview</label>
+                                    <div class="border rounded p-2 bg-light" id="previewContainer">
+                                        <div id="previewPlaceholder" class="text-center text-muted">
+                                            <i class="bi bi-image fs-1 d-block mb-2"></i>
+                                            <small>New image preview</small>
+                                        </div>
+                                        <img id="imagePreview" class="img-fluid d-none" style="max-height: 120px; width: 100%; object-fit: cover; border-radius: 4px;">
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-check-circle me-1"></i> Update Challenge
+                                    </button>
+                                    <a href="{{ route('admin.challenge.index') }}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-1"></i> Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            @endif
-        </div>
 
-        {{-- Thumbnail --}}
-        <div class="mb-3">
-            <label class="form-label">Thumbnail</label>
-            <input type="file" name="thumbnail" class="form-control">
-            @if($challenge->thumbnail)
-                <div class="mt-2">
-                    <img src="{{ asset('storage/'.$challenge->thumbnail) }}" width="120">
-                </div>
-            @endif
+            </form>
         </div>
-
-        <div class="mb-3">
-            <label class="form-label">Video URL</label>
-            <input type="url"
-                   name="video_url"
-                   value="{{ old('video_url', $challenge->video_url) }}"
-                   class="form-control">
-        </div>
-
-        <button class="btn btn-success">Update</button>
-        <a href="{{ route('admin.challenge.index') }}" class="btn btn-secondary">Back</a>
-    </form>
+    </div>
 </div>
+
+<!-- CKEditor 5 CDN -->
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // CKEditor
+        const textarea = document.getElementById('content');
+        let editor;
+
+        ClassicEditor.create(textarea, {
+            toolbar: ['bold', 'italic', 'bulletedList', 'numberedList', 'link', 'undo', 'redo']
+        }).then(newEditor => {
+            editor = newEditor;
+        }).catch(error => console.error(error));
+
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function() {
+            if (editor) {
+                editor.updateSourceElement();
+            }
+        });
+
+        // Image Preview
+        const fileInput = document.querySelector('input[name="image"]');
+        const previewPlaceholder = document.getElementById('previewPlaceholder');
+        const imagePreview = document.getElementById('imagePreview');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const fileURL = URL.createObjectURL(file);
+                imagePreview.src = fileURL;
+                imagePreview.classList.remove('d-none');
+                previewPlaceholder.classList.add('d-none');
+            } else {
+                imagePreview.classList.add('d-none');
+                previewPlaceholder.classList.remove('d-none');
+            }
+        });
+    });
+</script>
 @endsection

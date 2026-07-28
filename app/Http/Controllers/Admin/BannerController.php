@@ -25,7 +25,7 @@ class BannerController extends Controller
         $request->validate([
             'heading' => 'required|string',
             'description' => 'nullable|string',
-            'image' => 'required|image|mimes:jpg,jpeg,png,webp',
+            'image' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm,ogg,mov,avi|max:20480'
         ]);
         $imagePath = $request->file('image')->store('banners', 'public');
 
@@ -49,17 +49,18 @@ class BannerController extends Controller
         $request->validate([
             'heading' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png,webp,mp4,webm,ogg,mov,avi|max:20480'
         ]);
 
         if ($request->hasFile('image')) {
+
             if ($banner->image && Storage::disk('public')->exists($banner->image)) {
                 Storage::disk('public')->delete($banner->image);
             }
-
+        
             $banner->image = $request->file('image')->store('banners', 'public');
         }
-
+        
         $banner->update([
             'heading' => $request->heading,
             'description' => $request->description,

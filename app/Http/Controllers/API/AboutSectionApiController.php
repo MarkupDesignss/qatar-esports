@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\AboutSection;
+use App\Models\About;
 
 class AboutSectionApiController extends Controller
 {
@@ -31,6 +32,20 @@ class AboutSectionApiController extends Controller
             'success' => true,
             'message' => 'About sections fetched successfully',
             'data' => $data
+        ]);
+    }
+
+    public function mainAbout()
+    {
+        $about = About::first();
+        return response()->json([
+            'success' => true,
+            'data' => $about ? [
+                'heading'    => $about->heading,
+                'description'=> $about->description,
+                'badge'      => $about->badge,
+                'image'      => $about->image ? asset('storage/'.$about->image) : null,
+            ] : null,
         ]);
     }
 }

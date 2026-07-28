@@ -58,13 +58,13 @@ class MatchHighlightController extends Controller
         }
 
         /** 4️⃣ Store content blocks */
-        foreach ($request->contents as $i => $block) {
-            $match->contents()->create([
-                'heading' => $block['heading'] ?? null,
-                'content' => $block['content'],
-                'sort_order' => $i
-            ]);
-        }
+        // foreach ($request->contents as $i => $block) {
+        //     $match->contents()->create([
+        //         'heading' => $block['heading'] ?? null,
+        //         'content' => $block['content'],
+        //         'sort_order' => $i
+        //     ]);
+        // }
 
         return redirect()
             ->route('admin.matches.index')

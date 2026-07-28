@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Auth\Middleware\Authenticate as AuthenticateMiddleware;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+        
+        URL::forceScheme('https');
+        
         // Redirect unauthenticated admin requests to the admin login route
         AuthenticateMiddleware::redirectUsing(function ($request) {
             if ($request->expectsJson()) {

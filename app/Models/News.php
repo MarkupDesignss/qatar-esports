@@ -11,6 +11,7 @@ class News extends Model
         'title',
         'description',
         'type',
+        'type_id', 
         'thumbnail',
         'like_count',
         'bookmark_count',
@@ -20,5 +21,10 @@ class News extends Model
     public function tournament()
     {
         return $this->belongsTo(Tournament::class);
+    }
+    
+    public function type()
+    {
+        return $this->belongsTo(NewsType::class, 'type_id');
     }
 }

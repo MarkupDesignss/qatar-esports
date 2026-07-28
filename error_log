@@ -1,3 +1,242 @@
 [14-Jan-2026 10:39:14 UTC] PHP Fatal error:  Trait "Carbon\Carbon\Carbon" not found in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/TournamentController.php on line 11
 [19-Jan-2026 06:11:15 UTC] PHP Fatal error:  Trait "Carbon\Carbon\Carbon" not found in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/TournamentController.php on line 11
 [19-Jan-2026 06:11:19 UTC] PHP Fatal error:  Trait "Carbon\Carbon\Carbon" not found in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/TournamentController.php on line 11
+[11-Feb-2026 10:25:58 UTC] PHP Fatal error:  Cannot use Illuminate\Database\Eloquent\ModelNotFoundException as ModelNotFoundException because the name is already in use in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/TournamentMatchController.php on line 11
+[11-Feb-2026 10:26:05 UTC] PHP Fatal error:  Cannot use Illuminate\Database\Eloquent\ModelNotFoundException as ModelNotFoundException because the name is already in use in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/TournamentMatchController.php on line 11
+[11-Feb-2026 10:26:06 UTC] PHP Fatal error:  Cannot use Illuminate\Database\Eloquent\ModelNotFoundException as ModelNotFoundException because the name is already in use in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/TournamentMatchController.php on line 11
+[13-Mar-2026 11:30:51 UTC] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 552
+[13-Mar-2026 11:30:53 UTC] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 552
+[29-Apr-2026 17:03:46 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:03:46 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:03:50 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:03:51 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:03:53 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:03:56 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:03:56 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:03:59 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:04:01 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:04:02 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:04:05 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:04:06 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:04:08 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:04:11 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:04:11 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:04:14 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:04:16 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:04:17 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[29-Apr-2026 17:04:20 Asia/Kolkata] PHP Fatal error:  Cannot redeclare App\Http\Controllers\API\MatchMapController::mapveto() in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/API/MatchMapController.php on line 853
+[01-Jul-2026 05:46:29 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:46:29 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Warning:  require(/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 05:48:43 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/markcawm/public_html/qatar-esports/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/markcawm/public_html/qatar-esports/public/index.php:14
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/index.php(21): require_once()
+#1 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/public/index.php on line 14
+[01-Jul-2026 15:28:50 Asia/Kolkata] PHP Fatal error:  Cannot use Illuminate\Support\Facades\Hash as Hash because the name is already in use in /home/markcawm/public_html/qatar-esports/app/Http/Controllers/Admin/ModeratorController.php on line 9
+[24-Jul-2026 05:55:42 UTC] PHP Fatal error:  Uncaught ReflectionException: Class "view" does not exist in /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php:1122
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(1122): ReflectionClass->__construct()
+#1 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(933): Illuminate\Container\Container->build()
+#2 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve()
+#3 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(864): Illuminate\Foundation\Application->resolve()
+#4 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make()
+#5 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(1801): Illuminate\Foundation\Application->make()
+#6 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Routing/RoutingServiceProvider.php(177): Illuminate\Container\Container->offsetGet()
+#7 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(1115): Illuminate\Routing\RoutingServiceProvider->Illuminate\Routing\{closure}()
+#8 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(933): Illuminate\Container\Container->build()
+#9 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve()
+#10 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(864): Illuminate\Foundation\Application->resolve()
+#11 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make()
+#12 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(138): Illuminate\Foundation\Application->make()
+#13 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(851): app()
+#14 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(987): response()
+#15 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(839): Illuminate\Foundation\Exceptions\Handler->toIlluminateResponse()
+#16 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(738): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#17 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(626): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#18 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(574): Illuminate\Foundation\Exceptions\Handler->render()
+#19 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(148): Illuminate\Foundation\Http\Kernel->renderException()
+#20 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1220): Illuminate\Foundation\Http\Kernel->handle()
+#21 /home/markcawm/public_html/qatar-esports/public/index.php(20): Illuminate\Foundation\Application->handleRequest()
+#22 /home/markcawm/public_html/qatar-esports/index.php(21): require_once('/home/markcawm/...')
+#23 {main}
+
+Next Illuminate\Contracts\Container\BindingResolutionException: Target class [view] does not exist. in /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php:1124
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(933): Illuminate\Container\Container->build()
+#1 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve()
+#2 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(864): Illuminate\Foundation\Application->resolve()
+#3 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make()
+#4 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(1801): Illuminate\Foundation\Application->make()
+#5 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Routing/RoutingServiceProvider.php(177): Illuminate\Container\Container->offsetGet()
+#6 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(1115): Illuminate\Routing\RoutingServiceProvider->Illuminate\Routing\{closure}()
+#7 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(933): Illuminate\Container\Container->build()
+#8 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve()
+#9 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(864): Illuminate\Foundation\Application->resolve()
+#10 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make()
+#11 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(138): Illuminate\Foundation\Application->make()
+#12 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(851): app()
+#13 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(987): response()
+#14 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(839): Illuminate\Foundation\Exceptions\Handler->toIlluminateResponse()
+#15 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(738): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#16 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(626): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#17 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(574): Illuminate\Foundation\Exceptions\Handler->render()
+#18 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(148): Illuminate\Foundation\Http\Kernel->renderException()
+#19 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1220): Illuminate\Foundation\Http\Kernel->handle()
+#20 /home/markcawm/public_html/qatar-esports/public/index.php(20): Illuminate\Foundation\Application->handleRequest()
+#21 /home/markcawm/public_html/qatar-esports/index.php(21): require_once('/home/markcawm/...')
+#22 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 1124
+[24-Jul-2026 05:55:55 UTC] PHP Fatal error:  Uncaught ReflectionException: Class "view" does not exist in /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php:1122
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(1122): ReflectionClass->__construct()
+#1 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(933): Illuminate\Container\Container->build()
+#2 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve()
+#3 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(864): Illuminate\Foundation\Application->resolve()
+#4 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make()
+#5 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(1801): Illuminate\Foundation\Application->make()
+#6 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Routing/RoutingServiceProvider.php(177): Illuminate\Container\Container->offsetGet()
+#7 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(1115): Illuminate\Routing\RoutingServiceProvider->Illuminate\Routing\{closure}()
+#8 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(933): Illuminate\Container\Container->build()
+#9 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve()
+#10 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(864): Illuminate\Foundation\Application->resolve()
+#11 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make()
+#12 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(138): Illuminate\Foundation\Application->make()
+#13 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(851): app()
+#14 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(987): response()
+#15 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(839): Illuminate\Foundation\Exceptions\Handler->toIlluminateResponse()
+#16 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(738): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#17 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(626): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#18 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(574): Illuminate\Foundation\Exceptions\Handler->render()
+#19 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(148): Illuminate\Foundation\Http\Kernel->renderException()
+#20 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1220): Illuminate\Foundation\Http\Kernel->handle()
+#21 /home/markcawm/public_html/qatar-esports/public/index.php(20): Illuminate\Foundation\Application->handleRequest()
+#22 /home/markcawm/public_html/qatar-esports/index.php(21): require_once('/home/markcawm/...')
+#23 {main}
+
+Next Illuminate\Contracts\Container\BindingResolutionException: Target class [view] does not exist. in /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php:1124
+Stack trace:
+#0 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(933): Illuminate\Container\Container->build()
+#1 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve()
+#2 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(864): Illuminate\Foundation\Application->resolve()
+#3 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make()
+#4 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(1801): Illuminate\Foundation\Application->make()
+#5 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Routing/RoutingServiceProvider.php(177): Illuminate\Container\Container->offsetGet()
+#6 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(1115): Illuminate\Routing\RoutingServiceProvider->Illuminate\Routing\{closure}()
+#7 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(933): Illuminate\Container\Container->build()
+#8 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve()
+#9 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php(864): Illuminate\Foundation\Application->resolve()
+#10 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make()
+#11 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(138): Illuminate\Foundation\Application->make()
+#12 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(851): app()
+#13 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(987): response()
+#14 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(839): Illuminate\Foundation\Exceptions\Handler->toIlluminateResponse()
+#15 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(738): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#16 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(626): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#17 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(574): Illuminate\Foundation\Exceptions\Handler->render()
+#18 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(148): Illuminate\Foundation\Http\Kernel->renderException()
+#19 /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1220): Illuminate\Foundation\Http\Kernel->handle()
+#20 /home/markcawm/public_html/qatar-esports/public/index.php(20): Illuminate\Foundation\Application->handleRequest()
+#21 /home/markcawm/public_html/qatar-esports/index.php(21): require_once('/home/markcawm/...')
+#22 {main}
+  thrown in /home/markcawm/public_html/qatar-esports/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 1124

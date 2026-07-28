@@ -45,6 +45,12 @@ return [
         'client_secret' => env('APPLE_CLIENT_SECRET'),
         'redirect'      => env('APPLE_REDIRECT_URI'),
     ],
+    
+     'mailgun' => [
+        'domain'   => env('MAILGUN_DOMAIN'),
+        'secret'   => env('MAILGUN_API_KEY'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'https://api.mailgun.net'),
+    ],
 
 
 ];

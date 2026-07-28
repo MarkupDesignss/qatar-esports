@@ -1,57 +1,125 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="d-flex justify-content-between mb-3">
-    <h3 style="font-size: 1.7rem;font-weight:600;">Our services</h3>
-    <a href="{{ route('admin.services.create') }}" class="btn btn-primary mb-3">Add Service</a>
-    </div>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Image</th>
-            <th>Title</th>
-            <th>Status</th>
-            <th>Order</th>
-            <th width="150">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($services as $service)
-        <tr>
-            <td>
-                @if($service->image)
-                    <img src="{{ asset('storage/'.$service->image) }}" width="80">
-                @endif
-            </td>
-            <td>{{ $service->title }}</td>
-            <td>{{ $service->status ? 'Active' : 'Inactive' }}</td>
-            <td>{{ $service->sort_order }}</td>
-          <td>
-            {{-- Edit --}}
-            <a href="{{ route('admin.services.edit', $service) }}"
-               class="btn btn-sm btn-warning"
-               data-bs-toggle="tooltip"
-               title="Edit Service">
-                <i class="bi bi-pencil-square"></i>
-            </a>
-        
-            {{-- Delete --}}
-            <form method="POST"
-                  action="{{ route('admin.services.destroy', $service) }}"
-                  class="d-inline"
-                  onsubmit="return confirm('Delete this service?')">
-                @csrf
-                @method('DELETE')
-                <button class="btn btn-sm btn-danger"
-                        data-bs-toggle="tooltip"
-                        title="Delete Service">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </form>
-        </td>
+<div class="container-fluid px-2 px-sm-3 px-md-4 py-4">
 
-        </tr>
-        @endforeach
-    </tbody>
-</table>
+    {{-- Page Header --}}
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
+        <h4 class="mb-0 h5 h4-sm fw-bold text-gray-800">
+            <i class="bi bi-grid me-2"></i>Services
+        </h4>
+        <a href="{{ route('admin.services.create') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Add Service
+        </a>
+    </div>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    {{-- Services Table --}}
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="text-center" width="50">Sr.No.</th>
+                            <th class="text-center" width="100">Image</th>
+                            <th class="text-center">Title</th>
+                            <th class="text-center" width="200">Description</th>
+                            <th class="text-center" width="100">Status</th>
+                            <th class="text-center" width="150">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @forelse($services as $service)
+                            <tr>
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                
+                                <td class="text-center">
+                                    <img src="{{ asset('storage/'.$service->image) }}" 
+                                         class="rounded" 
+                                         style="height:40px; width:60px; object-fit:cover;">
+                                </td>
+                                
+                                <td style="text-align:center">
+                                    <strong class="small">{{ $service->title }}</strong>
+                                </td>
+                                
+                                <td class="small">
+                                    {{ Str::limit($service->description, 50) }}
+                                </td>
+                                
+                                <td class="text-center">
+                                    <span class="badge {{ $service->status ? 'bg-success' : 'bg-danger' }} px-3 py-2">
+                                        {{ $service->status ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </td>
+                                
+                                <td>
+                                    <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center align-items-center">
+                                        <a href="{{ route('admin.services.edit', $service->id) }}"
+                                           class="btn btn-warning btn-sm w-100 w-sm-auto"
+                                           data-bs-toggle="tooltip"
+                                           title="Edit Service">
+                                            <i class="bi bi-pencil-square"></i>
+                                            <span class="d-none d-sm-inline"> Edit</span>
+                                        </a>
+                                        
+                                        <form action="{{ route('admin.services.destroy', $service->id) }}"
+                                              method="POST"
+                                              class="d-inline w-100 w-sm-auto">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-danger btn-sm w-100 w-sm-auto"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Delete Service"
+                                                    onclick="return confirm('Are you sure you want to delete this service?')">
+                                                <i class="bi bi-trash"></i>
+                                                <span class="d-none d-sm-inline"> Delete</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bi bi-grid fs-1 text-muted mb-2"></i>
+                                        <p class="mb-0 text-muted">No services found</p>
+                                        <a href="{{ route('admin.services.create') }}" class="btn btn-primary btn-sm mt-3">
+                                            <i class="bi bi-plus-circle me-1"></i> Add First Service
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Pagination --}}
+        @if($services instanceof \Illuminate\Pagination\LengthAwarePaginator)
+        <div class="card-footer bg-white py-2 py-sm-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+                <small class="text-muted order-2 order-sm-1">
+                    Showing {{ $services->firstItem() ?? 0 }} to {{ $services->lastItem() ?? 0 }}
+                    of {{ $services->total() }} entries
+                </small>
+                <div class="order-1 order-sm-2 w-100 w-sm-auto">
+                    {{ $services->links() }}
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
+</div>
 @endsection
