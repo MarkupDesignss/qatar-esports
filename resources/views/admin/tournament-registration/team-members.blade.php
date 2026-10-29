@@ -1,4 +1,4 @@
-{{-- resources/views/admin/team-members.blade.php --}}
+{{-- resources/views/admin/tournament-registration/team-members.blade.php --}}
 @extends('layouts.admin')
 
 @section('content')
@@ -18,20 +18,16 @@
                             <i class="fas fa-trophy me-1"></i> Winner Team
                         </div>
                     @endif
-                     @if (!$tournamentEnded)
+                    @if (!$tournamentEnded)
                         <a href="{{ route('admin.team-registrations.add-member-form', $captain->id) }}" 
                            class="btn btn-sm btn-success">
                             <i class="fas fa-user-plus me-1"></i> Add Member
                         </a>
                     @endif
-                    <a href="{{ route('admin.tournament-registrations.team', ['tournament' => $tournament->id]) }}"
-                        class="btn btn-sm btn-secondary">
-                        <i class="fas fa-arrow-left me-1"></i> Back
-                    </a>
+
                     <!-- Change Captain Form -->
-                    @if (!$tournamentEnded && $members->count() > 1)
+                    @if (!$tournamentEnded && $members->count() >= 1)
                         <div class="">
-                            
                             <div class="card-body">
                                 <form action="{{ route('admin.team-registrations.change-captain', $captain->id) }}" method="POST">
                                     @csrf
@@ -59,6 +55,11 @@
                             </div>
                         </div>
                     @endif
+
+                    <a href="{{ route('admin.tournament-registrations.team', ['tournament' => $tournament->id]) }}"
+                        class="btn btn-sm btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back
+                    </a>
                 </div>
             </div>
         </div>
@@ -83,15 +84,12 @@
                 \Carbon\Carbon::parse($tournament->start_date),
                 \Carbon\Carbon::parse($tournament->end_date)
             );
-            
-            // ✅ Check if prize has been distributed for this team
+
             // A team has prize distributed if any member has prize_amount > 0
             $hasPrizeDistributed = $members->where('prize_amount', '>', 0)->count() > 0;
-            
-            // ✅ Check if prize is fully distributed or claimed
+
             $isPrizeFullyDistributed = $members->where('prize_amount', '>', 0)->count() > 0;
-            
-            // ✅ Determine if remove button should be hidden
+
             // Hide remove button if:
             // 1. Tournament has ended, OR
             // 2. Prize has been distributed for this team
@@ -215,7 +213,6 @@
                                                 </button>
                                             </form>
                                         @else
-                                            {{-- ow reason why remove is disabled --}}
                                             @if($hasPrizeDistributed)
                                                 <span class="text-muted" title="Prize has been distributed for this team">
                                                     <i class="fas fa-lock me-1"></i> Prize Distributed
@@ -239,114 +236,41 @@
             </div>
         </div>
 
-        <!-- Prize Distribution Form -->
-        @php
-            $hasPrizeDistributed = $members->where('prize_amount', '>', 0)->count() > 0;
-        @endphp
-
+        <!-- Prize Distribution Section - ALWAYS EDITABLE (after tournament ends) -->
         @if ($winnerTeamId == $captain->id && $tournament->prize_pool > 0)
-            <div class="card mt-3">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-money-bill-wave me-2"></i>
+            @if ($tournamentEnded)
+                <div class="card mt-3">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-money-bill-wave me-2"></i>
+                            @if ($hasPrizeDistributed)
+                                Edit Prize Distribution
+                            @else
+                                Distribute Prize Money
+                            @endif
+                        </h5>
+                    </div>
+                    <div class="card-body">
                         @if ($hasPrizeDistributed)
-                            Prize Distribution Details
-                        @else
-                            Distribute Prize Money
+                            <div class="alert alert-info">
+                                <i class="fas fa-edit me-2"></i> 
+                                You can update the prize amounts and ranks below. 
+                                Changes will overwrite the existing distribution.
+                            </div>
                         @endif
-                    </h5>
-                </div>
-                <div class="card-body">
-                    @if ($hasPrizeDistributed)
-                        {{-- View Mode - Show distributed prizes --}}
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Member</th>
-                                        <th>Role</th>
-                                        <th>Prize Amount (QR)</th>
-                                        <th>Rank/Position</th>
-                                        <!--<th>Status</th>-->
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($members as $member) 
-                                        <tr>
-                                            <td>
-                                                {{ $member->first_name ?? $member->email ?? "N/A" }}
-                                                @if ($member->is_captain)
-                                                    <span class="badge bg-primary ms-1">Captain</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($member->is_captain)
-                                                    <span class="badge bg-info">Captain</span>
-                                                @else
-                                                    <span class="badge bg-secondary">Member</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if (!is_null($member->prize_amount))
-                                                    <span
-                                                        class="badge bg-{{ $member->prize_amount > 0 ? 'success' : 'secondary' }} p-2">
-                                                        {{ number_format($member->prize_amount, 2) }}
-                                                    </span>
-                                                @else
-                                                    <span class="text-muted">Not assigned</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($member->prize_rank)
-                                                    <span class="badge bg-dark">{{ $member->prize_rank }}</span>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
-                                            <!--<td>-->
-                                            <!--    @if ($member->is_prize_claimed)-->
-                                            <!--        <span class="badge bg-success">Claimed</span>-->
-                                            <!--        <small class="d-block text-muted">-->
-                                            <!--            {{ $member->prize_distributed_at ? $member->prize_distributed_at->format('Y-m-d') : '' }}-->
-                                            <!--        </small>-->
-                                            <!--    @elseif(!is_null($member->prize_amount) && $member->prize_amount > 0)-->
-                                            <!--        <span class="badge bg-warning">Pending</span>-->
-                                            <!--    @else-->
-                                            <!--        <span class="badge bg-secondary">-</span>-->
-                                            <!--    @endif-->
-                                            <!--</td>-->
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                                <tfoot>
-                                    <tr class="table-active">
-                                        <td colspan="2" class="text-end fw-bold">Total Distributed:</td>
-                                        <td colspan="3">
-                                            <span class="fw-bold text-success">
-                                                QR{{ number_format($members->sum('prize_amount') ?? 0, 2) }}
-                                            </span>
-                                            <small class="text-muted ms-2">
-                                                (of {{ number_format($tournament->prize_pool, 2) }})
-                                            </small>
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    @else
-                        {{-- Edit Mode - Show input fields for distribution --}}
-                        <form action="{{ route('admin.team-registrations.distribute-prize', $tournament->id) }}"
-                            method="POST">
+
+                        {{-- MAIN FORM for distributing/updating prizes --}}
+                        <form action="{{ route('admin.team-registrations.distribute-prize', $tournament->id) }}" method="POST">
                             @csrf
 
                             <div class="table-responsive">
                                 <table class="table table-bordered">
                                     <thead class="table-light">
-                                        <tr> 
+                                        <tr>
                                             <th>Member</th>
                                             <th>Role</th>
                                             <th>Prize Amount (QR)</th>
-                                            <th>Rank/Position</th>
+                                            <th>Rank / Position</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -372,7 +296,7 @@
                                                     <input type="number"
                                                         class="form-control prize-amount @error('distributions.' . $loop->index . '.amount') is-invalid @enderror"
                                                         name="distributions[{{ $loop->index }}][amount]"
-                                                        value="{{ old('distributions.' . $loop->index . '.amount', 0) }}"
+                                                        value="{{ old('distributions.' . $loop->index . '.amount', $member->prize_amount ?? 0) }}"
                                                         min="0" step="0.01" placeholder="Enter amount"
                                                         style="max-width: 200px;">
                                                     @error('distributions.' . $loop->index . '.amount')
@@ -382,7 +306,7 @@
                                                 <td>
                                                     <input type="text" class="form-control"
                                                         name="distributions[{{ $loop->index }}][rank]"
-                                                        value="{{ old('distributions.' . $loop->index . '.rank', '') }}"
+                                                        value="{{ old('distributions.' . $loop->index . '.rank', $member->prize_rank ?? '') }}"
                                                         placeholder="e.g., 1st, 2nd, MVP" style="max-width: 200px;">
                                                 </td>
                                             </tr>
@@ -411,16 +335,35 @@
 
                             <div class="mt-3">
                                 <button type="submit" class="btn btn-primary" onclick="return validateDistribution()">
-                                    <i class="fas fa-save me-1"></i> Distribute Prize
-                                </button>
-                                <button type="reset" class="btn btn-secondary">
-                                    <i class="fas fa-undo me-1"></i> Reset
+                                    <i class="fas fa-save me-1"></i> 
+                                    {{ $hasPrizeDistributed ? 'Update Prize Distribution' : 'Distribute Prize' }}
                                 </button>
                             </div>
                         </form>
-                    @endif
+                        {{-- END of main form --}}
+
+                        {{-- RESET FORM – placed outside the main form --}}
+                        @if ($hasPrizeDistributed)
+                            <form action="{{ route('admin.team-registrations.reset-prize', $tournament->id) }}" 
+                                  method="POST" 
+                                  style="margin-top: 10px;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger" 
+                                        onclick="return confirm('Are you sure you want to reset all prize distributions? This action cannot be undone.')">
+                                    <i class="fas fa-undo me-1"></i> Reset All
+                                </button>
+                            </form>
+                        @endif
+
+                    </div>
                 </div>
-            </div>
+            @else
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-clock me-2"></i> 
+                    Prize distribution will be available after the tournament ends.
+                </div>
+            @endif
         @elseif($winnerTeamId == $captain->id && $tournament->prize_pool == 0)
             <div class="alert alert-info mt-3">
                 <i class="fas fa-info-circle me-2"></i>

@@ -21,16 +21,14 @@ class TournamentController extends Controller
      * GET /api/tournaments
      * Query params: search, game, filter (e.g., NearMe), status
      */
-
-
+    
     // public function index(Request $request)
     // {
     //     $now  = now();
     //     $user = $request->user();
         
     //     $queryBuilder = Tournament::with('game')
-    //         ->where('visibility', 'published')
-    //         ->orderByDesc('id');   // default order (latest first)
+    //         ->where('visibility', 'published');
         
     //     // Search by title or game name
     //     if ($request->filled('query')) {
@@ -123,15 +121,31 @@ class TournamentController extends Controller
     //         ];
     //     });
     
-    //     // ----- NEW SORTING WITH URGENCY -----
+    //     // ----- UPDATED SORTING LOGIC -----
     //     // 1. Open registration first (is_registration_open = true)
-    //     // 2. Among open, sort by registration_end ascending (soonest closing first)
-    //     // 3. For ties, sort by id descending (latest first)
-    //     $sorted = $response->sortBy(function ($item) {
-    //         $openScore = $item['is_registration_open'] ? 0 : 1;   // 0 first
-    //         $endDate   = $item['registration_end'] ?? '9999-12-31 23:59:59'; // nulls last
-    //         $idScore   = -$item['id'];                            // descending id
-    //         return [$openScore, $endDate, $idScore];
+    //     // 2. Among open registrations: sort by registration_end DESC (latest end date first)
+    //     // 3. Among closed registrations: sort by registration_end DESC (latest end date first)
+    //     // 4. For ties, sort by id descending (latest first)
+    //     $sorted = $response->sort(function ($a, $b) {
+    //         // First: Open registration comes first
+    //         if ($a['is_registration_open'] && !$b['is_registration_open']) {
+    //             return -1;
+    //         }
+    //         if (!$a['is_registration_open'] && $b['is_registration_open']) {
+    //             return 1;
+    //         }
+    
+    //         // Both have same registration status (both open or both closed)
+    //         // Sort by registration_end DESC (latest end date first)
+    //         $aEnd = $a['registration_end'] ? Carbon::parse($a['registration_end'])->timestamp : 0;
+    //         $bEnd = $b['registration_end'] ? Carbon::parse($b['registration_end'])->timestamp : 0;
+    
+    //         if ($aEnd !== $bEnd) {
+    //             return $bEnd - $aEnd; // Descending order
+    //         }
+    
+    //         // If registration_end is same, sort by id DESC (latest first)
+    //         return $b['id'] - $a['id'];
     //     })->values(); // reset numeric keys
     
     //     return response()->json($sorted);
@@ -141,37 +155,51 @@ class TournamentController extends Controller
     {
         $now  = now();
         $user = $request->user();
-        
+    
         $queryBuilder = Tournament::with('game')
             ->where('visibility', 'published');
-        
+    
         // Search by title or game name
         if ($request->filled('query')) {
             $searchTerm = '%' . $request->query('query') . '%';
+    
             $queryBuilder->where(function ($query) use ($searchTerm) {
                 $query->where('title', 'like', $searchTerm)
-                      ->orWhereHas('game', function ($gameQuery) use ($searchTerm) {
-                          $gameQuery->where('name', 'like', $searchTerm);
-                      });
+                    ->orWhereHas('game', function ($gameQuery) use ($searchTerm) {
+                        $gameQuery->where('name', 'like', $searchTerm);
+                    });
             });
         }
     
-        // Filter logic (unchanged)
+        // Filter logic
         if ($request->filled('filter')) {
             $filter = strtolower($request->filter);
     
             if ($filter === 'upcoming') {
+    
                 $queryBuilder->where('start_date', '>', $now);
+    
             } elseif ($filter === 'live') {
+    
                 $queryBuilder->where('start_date', '<=', $now)
                     ->where('end_date', '>=', $now);
+    
             } elseif ($filter === 'completed') {
+    
                 $queryBuilder->where('end_date', '<', $now);
+    
             } elseif ($filter === 'nearby') {
+    
                 if ($user && $user->location) {
-                    $queryBuilder->where('location', 'like', '%' . $user->location . '%');
+                    $queryBuilder->where(
+                        'location',
+                        'like',
+                        '%' . $user->location . '%'
+                    );
                 }
+    
             } elseif ($filter !== 'all') {
+    
                 $queryBuilder->whereHas('game', function ($q) use ($filter) {
                     $q->where('name', 'like', '%' . $filter . '%');
                 });
@@ -180,27 +208,46 @@ class TournamentController extends Controller
     
         $tournaments = $queryBuilder->get();
     
-        // Map to response format (unchanged)
+        // Map to response format
         $response = $tournaments->map(function ($t) use ($now) {
-            $start = $t->start_date ? Carbon::parse($t->start_date) : null;
-            $end   = $t->end_date ? Carbon::parse($t->end_date) : null;
     
+            $start = $t->start_date
+                ? Carbon::parse($t->start_date)
+                : null;
+    
+            $end = $t->end_date
+                ? Carbon::parse($t->end_date)
+                : null;
+    
+            // Dynamic tournament status
             if ($start && $end) {
+    
                 if ($now->lt($start)) {
+    
                     $status_dynamic = 'upcoming';
+    
                 } elseif ($now->between($start, $end)) {
+    
                     $status_dynamic = 'live';
+    
                 } else {
+    
                     $status_dynamic = 'completed';
                 }
+    
             } else {
+    
                 $status_dynamic = $t->status;
             }
     
+            // Registration status
             $isRegistrationOpen = false;
+    
             if ($t->registration_start && $t->registration_end) {
+    
                 $regStart = Carbon::parse($t->registration_start);
                 $regEnd   = Carbon::parse($t->registration_end);
+    
                 if ($now->between($regStart, $regEnd)) {
                     $isRegistrationOpen = true;
                 }
@@ -214,56 +261,97 @@ class TournamentController extends Controller
                 'format' => $t->format,
                 'team_size' => $t->team_size,
                 'location' => $t->location,
+    
                 'is_registration_open' => $isRegistrationOpen,
                 'registration_start' => $t->registration_start,
                 'registration_end' => $t->registration_end,
+    
                 'start_date' => $t->start_date,
                 'end_date' => $t->end_date,
+    
                 'prize_pool' => $t->prize_pool,
                 'entry_fee' => $t->entry_fee,
+    
                 'attendees' => $t->registered_participants,
                 'max_participants' => $t->max_participants,
+    
                 'social_links' => $t->social_links,
                 'stream_url' => $t->stream_url,
+    
                 'is_featured' => $t->is_featured,
+    
                 'status_dynamic' => $status_dynamic,
-                'game' => $t->game ? [
-                    'id' => $t->game->id,
-                    'name' => $t->game->name,
-                    'slug' => $t->game->slug,
-                    'logo' => $t->game->logo,
-                ] : null,
+    
+                'game' => $t->game
+                    ? [
+                        'id' => $t->game->id,
+                        'name' => $t->game->name,
+                        'slug' => $t->game->slug,
+                        'logo' => $t->game->logo,
+                    ]
+                    : null,
             ];
         });
     
-        // ----- UPDATED SORTING LOGIC -----
-        // 1. Open registration first (is_registration_open = true)
-        // 2. Among open registrations: sort by registration_end DESC (latest end date first)
-        // 3. Among closed registrations: sort by registration_end DESC (latest end date first)
-        // 4. For ties, sort by id descending (latest first)
+        // -------------------------------------------------
+        // SORTING
+        // -------------------------------------------------
+        // 1. Open registration first
+        // 2. Registration end DESC
+        // 3. ID DESC
+        // -------------------------------------------------
+    
         $sorted = $response->sort(function ($a, $b) {
-            // First: Open registration comes first
+    
+            // Open registration comes first
             if ($a['is_registration_open'] && !$b['is_registration_open']) {
                 return -1;
             }
+    
             if (!$a['is_registration_open'] && $b['is_registration_open']) {
                 return 1;
             }
     
-            // Both have same registration status (both open or both closed)
-            // Sort by registration_end DESC (latest end date first)
-            $aEnd = $a['registration_end'] ? Carbon::parse($a['registration_end'])->timestamp : 0;
-            $bEnd = $b['registration_end'] ? Carbon::parse($b['registration_end'])->timestamp : 0;
+            // Both have same registration status
+            // Sort by registration_end DESC
+    
+            $aEnd = $a['registration_end']
+                ? Carbon::parse($a['registration_end'])->timestamp
+                : 0;
+    
+            $bEnd = $b['registration_end']
+                ? Carbon::parse($b['registration_end'])->timestamp
+                : 0;
     
             if ($aEnd !== $bEnd) {
-                return $bEnd - $aEnd; // Descending order
+                return $bEnd - $aEnd;
             }
     
-            // If registration_end is same, sort by id DESC (latest first)
+            // If registration_end is same
+            // Sort by ID DESC
             return $b['id'] - $a['id'];
-        })->values(); // reset numeric keys
     
-        return response()->json($sorted);
+        })->values();
+    
+        // -------------------------------------------------
+        // PAGINATION
+        // -------------------------------------------------
+    
+        $page = max((int) $request->get('page', 1), 1);
+        $perPage = 10;
+    
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $sorted->forPage($page, $perPage)->values(),
+            $sorted->count(),
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
+    
+        return response()->json($paginator);
     }
 
     public function listByDate(Request $request)
@@ -553,6 +641,7 @@ class TournamentController extends Controller
                 'title' => $tournament->title,
                 'slug' => $tournament->slug,
                 'description' => $tournament->description,
+                'base_url' => asset('storage') . '/',
                 'rules' => $tournament->rules,
                 'logo' => $tournament->logo,
                 'banner' => $tournament->banner,
@@ -1342,6 +1431,7 @@ class TournamentController extends Controller
                             'first_name'            => $user->first_name,
                             'last_name'             => $user->last_name,
                             'username'              => $user->username,
+                             'profile_image'         => $user->profile->profile_image ?? null,
                             'is_captain'            => true, // Solo player is always captain
                             'prize_amount'          => $reg->prize_amount ? (float) $reg->prize_amount : 0,
                             'prize_rank'            => $reg->prize_rank ?? '1',
@@ -1384,6 +1474,7 @@ class TournamentController extends Controller
                         'first_name'            => $user->first_name,
                         'last_name'             => $user->last_name,
                         'username'              => $user->username,
+                        'profile_image'         => $user->profile->profile_image ?? null,
                         'is_captain'            => (bool) $reg->is_captain,
                         'prize_amount'          => $reg->prize_amount ? (float) $reg->prize_amount : 0,
                         'prize_rank'            => $reg->prize_rank,
@@ -1416,7 +1507,7 @@ class TournamentController extends Controller
                         'first_name'    => $captainUser->first_name,
                         'last_name'     => $captainUser->last_name,
                         'username'      => $captainUser->username,
-                        'profile_image' => $this->getUserProfileImage($captainUser->id),
+                        'profile_image' => $captainUser->profile->profile_image ?? null,
                         'social_links'  => $this->getUserSocialLinks($captainUser->id),
                         'prize_amount'  => $captainReg->prize_amount ? (float) $captainReg->prize_amount : 0,
                         'prize_rank'    => $captainReg->prize_rank,

@@ -17,54 +17,38 @@ use Illuminate\Support\Facades\Validator;
 class TournamentRegistrationController extends Controller
 {
     /**
+     * Check if user has any active registration in overlapping tournament
+     */
+    private function hasOverlappingTournament($userId, $newStart, $newEnd, $excludeTournamentId = null)
+    {
+        if (empty($newStart) || empty($newEnd)) {
+            return false;
+        }
+
+        $registrations = TournamentRegistration::where('user_id', $userId)
+            ->where('status', 1)
+            ->with('tournament')
+            ->get();
+
+        foreach ($registrations as $reg) {
+            $tournament = $reg->tournament;
+            if ($excludeTournamentId && $tournament->id == $excludeTournamentId) {
+                continue;
+            }
+
+            if ($tournament->start_date && $tournament->end_date) {
+                if ($newStart <= $tournament->end_date && $newEnd >= $tournament->start_date) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Solo Registration
      * POST /api/tournaments/{id}/register/solo
      */
-    // public function soloRegister(Request $request, $id)
-    // {
-    //     $user = $request->user();
-    //     $tournament = Tournament::findOrFail($id);
-
-    //     // if (!$tournament->is_registration_open) {
-    //     //     return response()->json(['message' => 'Registration is closed'], 422);
-    //     // }
-        
-    //     if (Carbon::parse($tournament->registration_end)->lt(Carbon::now())) {
-    //         return response()->json([
-    //             'message' => 'Registration is closed'
-    //         ], 422);
-    //     }
-
-    //     if ($tournament->max_participants && $tournament->registered_participants >= $tournament->max_participants) {
-    //         return response()->json(['message' => 'Tournament is full'], 422);
-    //     }
-
-    //     $exists = TournamentRegistration::where('tournament_id', $tournament->id)
-    //         ->where('user_id', $user->id)
-    //         ->where('type', 'solo')
-    //         ->where('status', 1)
-    //         ->first();
-
-    //     if ($exists) {
-    //         return response()->json(['message' => 'Already registered'], 200);
-    //     }
-
-    //     $registration = TournamentRegistration::create([
-    //         'tournament_id' => $tournament->id,
-    //         'type' => 'solo',
-    //         'name' => $user->first_name . ' ' . $user->last_name,
-    //         'email' => $user->email,
-    //         'phone' => $user->mobile ?? $user->phone,
-    //         'user_id' => $user->id,
-    //     ]);
-
-    //     $tournament->increment('registered_participants');
-
-    //     return response()->json([
-    //         'message' => 'Successfully registered for solo',
-    //         'registration' => $registration
-    //     ]);
-    // }
     public function soloRegister(Request $request, $id)
     {
         $user = $request->user();
@@ -82,6 +66,13 @@ class TournamentRegistrationController extends Controller
     
         if ($tournament->max_participants && $tournament->registered_participants >= $tournament->max_participants) {
             return response()->json(['message' => 'Tournament is full'], 422);
+        }
+        
+         // Overlap check
+        if ($this->hasOverlappingTournament($user->id, $tournament->start_date, $tournament->end_date, $tournament->id)) {
+            return response()->json([
+                'message' => 'You are already registered in another tournament that overlaps with this tournament\'s schedule.'
+            ], 422);
         }
     
         // Check if user already has a registration (any status)
@@ -130,110 +121,6 @@ class TournamentRegistrationController extends Controller
      * Team Registration (Create Team)
      * POST /api/tournaments/{id}/register/team
      */
-    // public function teamRegister(Request $request, $id)
-    // {
-    //     $user = $request->user();
-
-    //     $request->validate([
-    //         'team_name' => 'required|string|max:191',
-    //         'team_tag' => 'required|string|max:50',
-    //         'team_logo' => 'nullable|image|max:2048',
-    //     ]);
-    
-    //     $tournament = Tournament::findOrFail($id);
-    //     // if (!$tournament->is_registration_open) {
-    //     //     return response()->json(['message' => 'Registration is closed'], 422);
-    //     // }
-        
-    //     $exists = TournamentRegistration::where('tournament_id', $tournament->id)
-    //         ->where('user_id', $user->id)
-    //         ->where('type', 'team')
-    //         ->where('status', 1)
-    //         ->exists();
-        
-    //     if ($exists) {
-    //         return response()->json([
-    //             'message' => 'You have already registered in this tournament.'
-    //         ], 422);
-    //     }
-        
-    //     if (Carbon::parse($tournament->registration_end)->lt(Carbon::now())) {
-    //         return response()->json([
-    //             'message' => 'Registration is closed'
-    //         ], 422);
-    //     }
-
-    //     // Duplicate team check
-    //     $duplicate = TournamentRegistration::where('tournament_id', $tournament->id)
-    //         ->where('type', 'team')
-    //         ->where(function ($q) use ($request) {
-    //             $q->where('team_name', $request->team_name)
-    //               ->orWhere('team_tag', $request->team_tag);
-    //         })
-    //         ->exists();
-
-    //     if ($duplicate) {
-    //         return response()->json(['message' => 'Team name or tag already exists'], 200);
-    //     }
-        
-        
-    //         if (
-    //             !is_null($tournament->max_participants) &&
-    //             $tournament->registered_participants > $tournament->max_participants
-    //         ) {
-    //             throw ValidationException::withMessages([
-    //                 'message' => 'Tournament registration is full.'
-    //             ]);
-    //         }
-    //     // Upload team logo
-    //     $teamLogoPath = null;
-    //     if ($request->hasFile('team_logo')) {
-    //         $teamLogoPath = $request->file('team_logo')->store('teams', 'public');
-    //     }
-
-    //     // Generate unique invite code
-    //     do {
-    //         $inviteCode = Str::random(16);
-    //     } while (TournamentRegistration::where('invite_link', $inviteCode)->exists());
-
-    //     $registration = TournamentRegistration::create([
-    //         'tournament_id' => $tournament->id,
-    //         'type' => 'team',
-    //         'team_name' => $request->team_name,
-    //         'team_tag' => $request->team_tag,
-    //         'team_logo' => $teamLogoPath,
-    //         'is_captain' => true,
-    //         'invite_link' => $inviteCode,
-    //         'name' => $user->first_name . ' ' . $user->last_name,
-    //         'email' => $user->email,
-    //         'phone' => $user->mobile ?? $user->phone,
-    //         'user_id' => $user->id,
-    //     ]);
-
-    //     $tournament->increment('registered_participants');
-
-    //     // Frontend invite URL
-    //     //$tournamentSlug = Str::slug($tournament->title); 
-    //     $tournamentTitle = rawurlencode($tournament->title);
-    //     $inviteUrl = 'https://www.markupdesigns.net/qec-web/tourmainpage/'.$tournamentTitle.'?invite=' . $inviteCode;
-
-
-    //     // SEND INVITE EMAIL (OPTIONAL BUT RECOMMENDED)
-    //     Mail::to($user->email)->send(
-    //         new TournamentInviteMail(
-    //             $inviteUrl,
-    //             $tournament->title,
-    //             $request->team_name
-    //         )
-    //     );
-
-    //     return response()->json([
-    //         'message' => 'Team created successfully. An invite link has been sent to your email.',
-    //         'registration' => $registration,
-    //         'invite_link' => $inviteUrl,
-    //         'team_logo_url' => $teamLogoPath ? asset('storage/' . $teamLogoPath) : null,
-    //     ]);
-    // }
     public function teamRegister(Request $request, $id)
     {
         $user = $request->user();
@@ -268,6 +155,13 @@ class TournamentRegistrationController extends Controller
                 return response()->json(['message' => 'Tournament is full'], 422);
             }
             
+            // Overlap check
+            if ($this->hasOverlappingTournament($user->id, $tournament->start_date, $tournament->end_date, $tournament->id)) {
+                return response()->json([
+                    'message' => 'You are already registered in another tournament that overlaps with this tournament\'s schedule.'
+                ], 422);
+            }
+                
             // Update the existing registration
             $existingRegistration->update([
                 'status' => 1,
@@ -424,101 +318,6 @@ class TournamentRegistrationController extends Controller
      * Join Team via Invite Code
      * POST /api/tournaments/join-team
      */
-    // public function joinTeam(Request $request)
-    // {
-    //     $user = $request->user();
-
-    //     // Validate request
-    //     $request->validate([
-    //         'invite_link' => 'required|string',
-    //     ]);
-
-    //     $inviteLink = $request->invite_link;
-
-    //     // Extract invite code if frontend sent full URL
-    //     if (strpos($inviteLink, 'invite=') !== false) {
-    //         parse_str(parse_url($inviteLink, PHP_URL_QUERY), $queryParams);
-    //         $inviteCode = $queryParams['invite'] ?? $inviteLink;
-    //     } else {
-    //         $inviteCode = $inviteLink;
-    //     }
-
-    //     // Find the team using the invite code stored in DB
-    //     $team = TournamentRegistration::where('invite_link', $inviteCode)
-    //         ->where('type', 'team')
-    //         ->firstOrFail();
-
-    //     // Get the tournament
-    //     $tournament = Tournament::findOrFail($team->tournament_id);
-        
-    //     $exists = TournamentRegistration::where('tournament_id', $tournament->id)
-    //         ->where('user_id', $user->id)
-    //         ->where('type', 'team')
-    //         ->exists();
-        
-    //     if ($exists) {
-    //         return response()->json([
-    //             'message' => 'You have already registered in this tournament.'
-    //         ], 422);
-    //     }
-
-    //     // Check if registration is open
-    //     // if (!$tournament->is_registration_open) {
-    //     //     return response()->json(['message' => 'Registration is closed'], 422);
-    //     // }
-        
-    //     if (Carbon::parse($tournament->registration_end)->lt(Carbon::now())) {
-    //         return response()->json([
-    //             'message' => 'Registration is closed'
-    //         ], 200);
-    //     }
-
-    //     // Check if user already joined this team
-    //     $exists = TournamentRegistration::where('invite_link', $team->invite_link)
-    //         ->where('user_id', $user->id)
-    //         ->exists();
-
-    //     if ($exists) {
-    //         return response()->json(['message' => 'Already part of this team'], 200);
-    //     }
-
-    //     // Team size check
-    //     $membersCount = TournamentRegistration::where('invite_link', $team->invite_link)->count();
-    //     if ($tournament->team_size && $membersCount >= $tournament->team_size) {
-    //         return response()->json(['message' => 'Team is full'], 422);
-    //     }
-
-    //     // Register the user to the team
-    //     $registration = TournamentRegistration::create([
-    //         'tournament_id' => $tournament->id,
-    //         'type' => 'team',
-    //         'team_name' => $team->team_name,
-    //         'team_tag' => $team->team_tag,
-    //         'team_logo' => $team->team_logo,
-    //         'is_captain' => false,
-    //         'invite_link' => $team->invite_link, // store invite code
-    //         'user_id' => $user->id,
-    //         'name' => $user->name,
-    //         'email' => $user->email,
-    //         'phone' => $user->phone ?? null,
-    //     ]);
-
-    //     // Increment total registered participants
-    //     $tournament->increment('registered_participants');
-
-    //     // Build full invite URL to send back
-    //     $frontendBase = 'https://www.markupdesigns.net/qec-web/tourmainpage/';
-    //     //$frontendBase = 'http://localhost:5173/qec-web/tourmainpage/';
-    //     $fullInviteUrl = $frontendBase . urlencode($tournament->name) . '?invite=' . $registration->invite_link;
-
-    //     // Response
-    //     return response()->json([
-    //         'message' => 'Joined team successfully',
-    //         'registration' => $registration,
-    //         'invite_link' => $fullInviteUrl, // full URL for frontend
-    //         'team_logo_url' => $team->team_logo ? asset('storage/' . $team->team_logo) : null,
-    //     ]);
-    // }
     
     public function joinTeam(Request $request)
     {
@@ -551,6 +350,13 @@ class TournamentRegistrationController extends Controller
     
         // Get the tournament
         $tournament = Tournament::findOrFail($team->tournament_id);
+        
+        // Overlap check
+        if ($this->hasOverlappingTournament($user->id, $tournament->start_date, $tournament->end_date, $tournament->id)) {
+            return response()->json([
+                'message' => 'You are already registered in another tournament that overlaps with this tournament\'s schedule.'
+            ], 422);
+        }
         
         // Check if user has any registration (any status) for this tournament
         $existingRegistration = TournamentRegistration::where('tournament_id', $tournament->id)
@@ -667,29 +473,30 @@ class TournamentRegistrationController extends Controller
      * My Tournaments API
      * GET /api/my-tournaments
      */
-
-
-    //  public function myTournaments(Request $request)
+    
+    // public function myTournaments(Request $request)
     // {
     //     try {
     //         $userId = auth()->id();
-
-    //         $tournaments = Tournament::with(['registrations', 'game'])
+    
+    //         $tournaments = Tournament::with(['registrations' => function ($query) use ($userId) {
+    //                 $query->where('user_id', $userId)
+    //                       ->where('status', 1); // ✅ Eager load only status 1 registrations
+    //             }, 'game'])
     //             ->whereHas('registrations', function ($q) use ($userId) {
-    //                 $q->where('user_id', $userId);
+    //                 $q->where('user_id', $userId)
+    //                   ->where('status', 1);
     //             })
     //             ->orderByDesc('start_date')
     //             ->get();
-
+    
     //         $response = $tournaments->map(function ($tournament) use ($userId) {
-
-    //             // All registrations of this user for this tournament
-    //             $userRegistrations = $tournament->registrations
-    //                 ->where('user_id', $userId);
-
-    //             // Map each registration individually
+    
+    //             // All registrations are already filtered via eager loading
+    //             $userRegistrations = $tournament->registrations;
+    
     //             return $userRegistrations->map(function ($registration) use ($tournament) {
-
+    
     //                 $now = now();
     //                 if ($tournament->start_date > $now) {
     //                     $status = 'upcoming';
@@ -698,31 +505,30 @@ class TournamentRegistrationController extends Controller
     //                 } else {
     //                     $status = 'ongoing';
     //                 }
-
-    //                  $inviteUrl = 'https://www.markupdesigns.net/qec-web/tourmainpage/'
-    //                 //$inviteUrl = 'http://localhost:5173/qec-web/tourmainpage/'
-    //                 . $tournament->title
-    //                 . '?invite=' . $registration->invite_link;
-
+    
+    //                 $inviteUrl = 'https://www.markupdesigns.net/qec-web/tourmainpage/'
+    //                     . $tournament->title
+    //                     . '?invite=' . $registration->invite_link;
+    
     //                 return [
     //                     'tournament_id'   => $tournament->id,
     //                     'tournament_name' => $tournament->title,
     //                     'tournament_logo' => $tournament->logo
     //                         ? url('storage/' . $tournament->logo)
     //                         : null,
-
+    
     //                     'game' => [
     //                         'id'   => $tournament->game->id ?? null,
     //                         'name' => $tournament->game->name ?? null,
     //                     ],
-
+    
     //                     'prize'  => $tournament->prize_pool,
     //                     'date'   => [
     //                         'start' => $tournament->start_date,
     //                         'end'   => $tournament->end_date,
     //                     ],
     //                     'status' => $status,
-
+    
     //                     'type'       => $registration->type,
     //                     'team_name'  => $registration->team_name,
     //                     'team_tag'   => $registration->team_tag,
@@ -730,13 +536,13 @@ class TournamentRegistrationController extends Controller
     //                     'invite_link'=> $inviteUrl,
     //                 ];
     //             });
-    //         })->flatten(1); // Flatten because we have multiple registrations per tournament
-
+    //         })->flatten(1);
+    
     //         return response()->json([
     //             'status' => true,
     //             'data'   => $response
     //         ]);
-
+    
     //     } catch (\Exception $e) {
     //         return response()->json([
     //             'status'  => false,
@@ -746,28 +552,226 @@ class TournamentRegistrationController extends Controller
     // }
     
     public function myTournaments(Request $request)
-{
-    try {
-        $userId = auth()->id();
-
-        $tournaments = Tournament::with(['registrations' => function ($query) use ($userId) {
-                $query->where('user_id', $userId)
-                      ->where('status', 1); // ✅ Eager load only status 1 registrations
-            }, 'game'])
-            ->whereHas('registrations', function ($q) use ($userId) {
-                $q->where('user_id', $userId)
-                  ->where('status', 1);
+    {
+        try {
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Unauthenticated'
+                ], 401);
+            }
+    
+            $userId = $user->id;
+            $now    = now();
+    
+            /* ============================================================
+             | STEP 1 : User ki saari registrations (status = 1)
+             ============================================================ */
+            $registrations = TournamentRegistration::with(['tournament.game'])
+                ->where('user_id', $userId)
+                ->where('status', 1)
+                ->get();
+    
+            if ($registrations->isEmpty()) {
+                return response()->json([
+                    'status' => true,
+                    'data'   => []
+                ]);
+            }
+    
+            /* ============================================================
+             | STEP 2 : Unique team keys (team members nikalne ke liye)
+             ============================================================ */
+            $teamKeys = $registrations->map(function ($reg) {
+                return [
+                    'tournament_id' => $reg->tournament_id,
+                    'team_name'     => $reg->team_name,
+                ];
+            })->unique(function ($item) {
+                return $item['tournament_id'] . '_' . $item['team_name'];
+            })->values();
+    
+            /* ============================================================
+             | STEP 3 : Team members (solo + team dono handle)
+             ============================================================ */
+            $membersGrouped = TournamentRegistration::with(['user.profile'])
+                ->where(function ($query) use ($teamKeys) {
+                    foreach ($teamKeys as $key) {
+                        $query->orWhere(function ($q) use ($key) {
+                            $q->where('tournament_id', $key['tournament_id']);
+                            if (is_null($key['team_name'])) {
+                                $q->whereNull('team_name');
+                            } else {
+                                $q->where('team_name', $key['team_name']);
+                            }
+                        });
+                    }
+                })
+                ->get()
+                ->groupBy(function ($item) {
+                    return $item->tournament_id . '_' . $item->team_name;
+                });
+    
+            /* ============================================================
+             | STEP 4 : Flat array banao (same structure as before)
+             ============================================================ */
+            $response = $registrations->map(function ($registration) use ($now, $membersGrouped) {
+    
+                $tournament = $registration->tournament;
+    
+                if (!$tournament) {
+                    return null;
+                }
+    
+                // ---- status determine ----
+                if ($tournament->start_date > $now) {
+                    $status = 'upcoming';
+                } elseif ($tournament->end_date && $tournament->end_date < $now) {
+                    $status = 'completed';
+                } else {
+                    $status = 'ongoing';
+                }
+    
+                $groupKey = $registration->tournament_id . '_' . $registration->team_name;
+                $members  = $membersGrouped[$groupKey] ?? collect();
+    
+                // ---- invite link ----
+                $inviteUrl = 'https://www.markupdesigns.net/qec-web/tourmainpage/'
+                    . rawurlencode($tournament->title)
+                    . '?invite=' . $registration->invite_link;
+    
+                return [
+                    'tournament_id'   => $tournament->id,
+                    'tournament_name' => $tournament->title,
+                    'tournament_logo' => $tournament->logo
+                        ? url('storage/' . $tournament->logo)
+                        : null,
+    
+                    'game' => [
+                        'id'   => $tournament->game->id ?? null,
+                        'name' => $tournament->game->name ?? null,
+                    ],
+    
+                    'prize'  => $tournament->prize_pool,
+                    'date'   => [
+                        'start' => $tournament->start_date,
+                        'end'   => $tournament->end_date,
+                    ],
+                    'status' => $status,
+    
+                    'type'        => $registration->type,
+                    'team_name'   => $registration->team_name,
+                    'team_tag'    => $registration->team_tag,
+                    'is_captain'  => $registration->is_captain,
+                    'invite_link' => $inviteUrl,
+    
+                    // ✅ Extra fields — sirf completed tournaments ke liye useful,
+                    // baaki me null rahenge (backward compatible)
+                    'team_size' => $status === 'completed' ? $members->count() : null,
+    
+                    'members' => $status === 'completed'
+                        ? $members->map(function ($member) {
+                            return [
+                                'user_id' => $member->user->id,
+                                'name'    => trim($member->user->first_name . ' ' . $member->user->last_name),
+                                'email'   => $member->user->email,
+                                'phone'   => $member->user->mobile,
+                                'profile_image' => optional($member->user->profile)->profile_image
+                                    ? asset('storage/' . $member->user->profile->profile_image)
+                                    : null,
+                            ];
+                        })->values()
+                        : null,
+    
+                    'prize_amount'         => $status === 'completed' ? $registration->prize_amount : null,
+                    'prize_rank'           => $status === 'completed' ? $registration->prize_rank : null,
+                    'prize_distributed_at' => $status === 'completed' ? $registration->prize_distributed_at : null,
+                    'is_prize_claimed'     => $status === 'completed'
+                        ? (bool) $registration->is_prize_claimed
+                        : null,
+                ];
             })
-            ->orderByDesc('start_date')
-            ->get();
+            ->filter()                         // null entries hatao (missing tournament)
+            ->sortByDesc(function ($item) {
+                return $item['date']['start'];
+            })
+            ->values();
+    
+            return response()->json([
+                'status' => true,
+                'data'   => $response
+            ]);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
-        $response = $tournaments->map(function ($tournament) use ($userId) {
+    /**
+     * My Teams API
+     * GET /api/my-teams
+     */
 
-            // All registrations are already filtered via eager loading
-            $userRegistrations = $tournament->registrations;
-
-            return $userRegistrations->map(function ($registration) use ($tournament) {
-
+    public function myTeams(Request $request)
+    {
+        try {
+            $user = $request->user();
+            $userId = $user->id;
+    
+            // Step 1: User ke saare teams (only status 1)
+            $teams = TournamentRegistration::with(['tournament.game'])
+                ->where('type', 'team')
+                ->where('user_id', $userId)
+                ->where('status', 1)
+                ->get();
+    
+            if ($teams->isEmpty()) {
+                return response()->json([
+                    'status' => true,
+                    'data' => [
+                        'user_id' => $userId,
+                        'teams'   => []
+                    ]
+                ]);
+            }
+    
+            // Step 2: Unique team identifiers
+            $teamKeys = $teams->map(function ($team) {
+                return [
+                    'tournament_id' => $team->tournament_id,
+                    'team_name'     => $team->team_name,
+                ];
+            });
+    
+            // Step 3: All members of those teams with status 1 only
+            $membersGrouped = TournamentRegistration::with(['user.profile'])
+                ->where('type', 'team')
+                ->where('status', 1)  // ✅ ADD THIS LINE - Only fetch members with status 1
+                ->where(function ($query) use ($teamKeys) {
+                    foreach ($teamKeys as $key) {
+                        $query->orWhere(function ($q) use ($key) {
+                            $q->where('tournament_id', $key['tournament_id'])
+                              ->where('team_name', $key['team_name']);
+                        });
+                    }
+                })
+                ->get()
+                ->groupBy(function ($item) {
+                    return $item->tournament_id . '_' . $item->team_name;
+                });
+    
+            // Step 4: Build response
+            $teamsData = $teams->map(function ($team) use ($membersGrouped) {
+    
+                $tournament = $team->tournament;
+                $groupKey   = $team->tournament_id . '_' . $team->team_name;
+                $members    = $membersGrouped[$groupKey] ?? collect();
+    
+                // Tournament status
                 $now = now();
                 if ($tournament->start_date > $now) {
                     $status = 'upcoming';
@@ -776,419 +780,174 @@ class TournamentRegistrationController extends Controller
                 } else {
                     $status = 'ongoing';
                 }
-
-                $inviteUrl = 'https://www.markupdesigns.net/qec-web/tourmainpage/'
-                    . $tournament->title
-                    . '?invite=' . $registration->invite_link;
-
-                return [
-                    'tournament_id'   => $tournament->id,
-                    'tournament_name' => $tournament->title,
-                    'tournament_logo' => $tournament->logo
-                        ? url('storage/' . $tournament->logo)
-                        : null,
-
-                    'game' => [
-                        'id'   => $tournament->game->id ?? null,
-                        'name' => $tournament->game->name ?? null,
-                    ],
-
-                    'prize'  => $tournament->prize_pool,
-                    'date'   => [
-                        'start' => $tournament->start_date,
-                        'end'   => $tournament->end_date,
-                    ],
-                    'status' => $status,
-
-                    'type'       => $registration->type,
-                    'team_name'  => $registration->team_name,
-                    'team_tag'   => $registration->team_tag,
-                    'is_captain' => $registration->is_captain,
-                    'invite_link'=> $inviteUrl,
-                ];
-            });
-        })->flatten(1);
-
-        return response()->json([
-            'status' => true,
-            'data'   => $response
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'status'  => false,
-            'message' => $e->getMessage()
-        ], 500);
-    }
-}
-
-    /**
-     * My Teams API
-     * GET /api/my-teams
-     */
     
-//   public function myTeams(Request $request)
-// {
-//     try {
-//         $user = $request->user();
-//         $userId = $user->id;
-
-//         // Step 1: User ke saare teams
-//         $teams = TournamentRegistration::with(['tournament.game'])
-//             ->where('type', 'team')
-//             ->where('user_id', $userId)
-//             ->get();
-
-//         if ($teams->isEmpty()) {
-//             return response()->json([
-//                 'status' => true,
-//                 'data' => [
-//                     'user_id' => $userId,
-//                     'teams'   => []
-//                 ]
-//             ]);
-//         }
-
-//         // Step 2: Unique team identifiers
-//         $teamKeys = $teams->map(function ($team) {
-//             return [
-//                 'tournament_id' => $team->tournament_id,
-//                 'team_name'     => $team->team_name,
-//             ];
-//         });
-
-//         // Step 3: All members of those teams (single query)
-//         $membersGrouped = TournamentRegistration::with(['user.profile'])
-//             ->where('type', 'team')
-//             ->where(function ($query) use ($teamKeys) {
-//                 foreach ($teamKeys as $key) {
-//                     $query->orWhere(function ($q) use ($key) {
-//                         $q->where('tournament_id', $key['tournament_id'])
-//                           ->where('team_name', $key['team_name']);
-//                     });
-//                 }
-//             })
-//             ->get()
-//             ->groupBy(function ($item) {
-//                 return $item->tournament_id . '_' . $item->team_name;
-//             });
-
-//         // Step 4: Build response
-//         $teamsData = $teams->map(function ($team) use ($membersGrouped) {
-
-//             $tournament = $team->tournament;
-//             $groupKey   = $team->tournament_id . '_' . $team->team_name;
-//             $members    = $membersGrouped[$groupKey] ?? collect();
-
-//             // Tournament status
-//             $now = now();
-//             if ($tournament->start_date > $now) {
-//                 $status = 'upcoming';
-//             } elseif ($tournament->end_date && $tournament->end_date < $now) {
-//                 $status = 'completed';
-//             } else {
-//                 $status = 'ongoing';
-//             }
-
-//             return [
-//                 'team_id'   => $team->id,
-//                 'team_name' => $team->team_name,
-//                 'team_tag'  => $team->team_tag,
-//                 'is_captain'=> $team->is_captain,
-//                 'team_logo'=> $team->team_logo
-//                     ? asset('storage/' . $team->team_logo)
-//                     : null,
-
-//                 // âœ… Team size
-//                 'team_size' => $members->count(),
-
-//                 // âœ… Team members
-//                 'members' => $members->map(function ($member) {
-//                     return [
-//                         'user_id' => $member->user->id,
-//                         'name'    => trim($member->user->first_name . ' ' . $member->user->last_name),
-//                         'email'   => $member->user->email,
-//                         'phone'   => $member->user->mobile,
-//                         'profile_image' => optional($member->user->profile)->profile_image
-//                             ? asset('storage/' . $member->user->profile->profile_image)
-//                             : null,
-//                     ];
-//                 }),
-
-//                 // Tournament info
-//                 'tournament' => [
-//                     'id'    => $tournament->id,
-//                     'name'  => $tournament->title,
-//                     'logo'  => $tournament->logo
-//                         ? asset('storage/' . $tournament->logo)
-//                         : null,
-//                     'game' => [
-//                         'id'   => $tournament->game->id ?? null,
-//                         'name' => $tournament->game->name ?? null,
-//                     ],
-//                     'prize' => $tournament->prize_pool,
-//                     'date' => [
-//                         'start' => $tournament->start_date,
-//                         'end'   => $tournament->end_date,
-//                     ],
-//                     'status' => $status,
-//                 ],
-
-//                 'invite_link' => $team->invite_link
-//                     ? 'https://www.markupdesigns.net/qec-web/tourmainpage/' .
-//                         rawurlencode($tournament->title) .
-//                         '?invite=' . $team->invite_link
-//                     : null,
-//             ];
-//         });
-
-//         return response()->json([
-//             'status' => true,
-//             // 'data' => [
-//                 // 'user_id' => $userId,
-//                 'teams'   => $teamsData
-//             // ]
-//         ]);
-
-//     } catch (\Exception $e) {
-//         return response()->json([
-//             'status'  => false,
-//             'message' => $e->getMessage()
-//         ], 500);
-//     }
-// }
-
-public function myTeams(Request $request)
-{
-    try {
-        $user = $request->user();
-        $userId = $user->id;
-
-        // Step 1: User ke saare teams (only status 1)
-        $teams = TournamentRegistration::with(['tournament.game'])
-            ->where('type', 'team')
-            ->where('user_id', $userId)
-            ->where('status', 1)
-            ->get();
-
-        if ($teams->isEmpty()) {
-            return response()->json([
-                'status' => true,
-                'data' => [
-                    'user_id' => $userId,
-                    'teams'   => []
-                ]
-            ]);
-        }
-
-        // Step 2: Unique team identifiers
-        $teamKeys = $teams->map(function ($team) {
-            return [
-                'tournament_id' => $team->tournament_id,
-                'team_name'     => $team->team_name,
-            ];
-        });
-
-        // Step 3: All members of those teams with status 1 only
-        $membersGrouped = TournamentRegistration::with(['user.profile'])
-            ->where('type', 'team')
-            ->where('status', 1)  // ✅ ADD THIS LINE - Only fetch members with status 1
-            ->where(function ($query) use ($teamKeys) {
-                foreach ($teamKeys as $key) {
-                    $query->orWhere(function ($q) use ($key) {
-                        $q->where('tournament_id', $key['tournament_id'])
-                          ->where('team_name', $key['team_name']);
-                    });
-                }
-            })
-            ->get()
-            ->groupBy(function ($item) {
-                return $item->tournament_id . '_' . $item->team_name;
-            });
-
-        // Step 4: Build response
-        $teamsData = $teams->map(function ($team) use ($membersGrouped) {
-
-            $tournament = $team->tournament;
-            $groupKey   = $team->tournament_id . '_' . $team->team_name;
-            $members    = $membersGrouped[$groupKey] ?? collect();
-
-            // Tournament status
-            $now = now();
-            if ($tournament->start_date > $now) {
-                $status = 'upcoming';
-            } elseif ($tournament->end_date && $tournament->end_date < $now) {
-                $status = 'completed';
-            } else {
-                $status = 'ongoing';
-            }
-
-            return [
-                'team_id'   => $team->id,
-                'team_name' => $team->team_name,
-                'team_tag'  => $team->team_tag,
-                'is_captain'=> $team->is_captain,
-                'team_logo'=> $team->team_logo
-                    ? asset('storage/' . $team->team_logo)
-                    : null,
-
-                // Team size (only status 1 members)
-                'team_size' => $members->count(),
-
-                // Team members (only status 1)
-                'members' => $members->map(function ($member) {
-                    return [
-                        'user_id' => $member->user->id,
-                        'name'    => trim($member->user->first_name . ' ' . $member->user->last_name),
-                        'email'   => $member->user->email,
-                        'phone'   => $member->user->mobile,
-                        'profile_image' => optional($member->user->profile)->profile_image
-                            ? asset('storage/' . $member->user->profile->profile_image)
-                            : null,
-                    ];
-                }),
-
-                // Tournament info
-                'tournament' => [
-                    'id'    => $tournament->id,
-                    'name'  => $tournament->title,
-                    'logo'  => $tournament->logo
-                        ? asset('storage/' . $tournament->logo)
-                        : null,
-                    'game' => [
-                        'id'   => $tournament->game->id ?? null,
-                        'name' => $tournament->game->name ?? null,
-                    ],
-                    'prize' => $tournament->prize_pool,
-                    'date' => [
-                        'start' => $tournament->start_date,
-                        'end'   => $tournament->end_date,
-                    ],
-                    'status' => $status,
-                ],
-
-                'invite_link' => $team->invite_link
-                    ? 'https://www.markupdesigns.net/qec-web/tourmainpage/' .
-                        rawurlencode($tournament->title) .
-                        '?invite=' . $team->invite_link
-                    : null,
-            ];
-        });
-
-        return response()->json([
-            'status' => true,
-            'teams'   => $teamsData
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'status'  => false,
-            'message' => $e->getMessage()
-        ], 500);
-    }
-}
-public function allTeams(Request $request)
-{
-    try {
-
-        // ðŸ”¹ Sab team registrations with relations
-        $registrations = TournamentRegistration::with([
-                'tournament.game',
-                'user.profile'
-            ])
-            ->where('type', 'team')
-            ->get();
-
-        if ($registrations->isEmpty()) {
-            return response()->json([
-                'status' => true,
-                'tournaments' => []
-            ]);
-        }
-
-        // ðŸ”¹ Tournament-wise group
-        $tournaments = $registrations->groupBy('tournament_id')->map(function ($items) {
-
-            $tournament = $items->first()->tournament;
-            $now = now();
-
-            // Tournament status
-            if ($tournament->start_date > $now) {
-                $status = 'upcoming';
-            } elseif ($tournament->end_date && $tournament->end_date < $now) {
-                $status = 'completed';
-            } else {
-                $status = 'ongoing';
-            }
-
-            // ðŸ”¹ Team-wise group inside tournament
-            $teams = $items->groupBy('team_name')->map(function ($members) use ($tournament) {
-
-                $team = $members->first();
-
                 return [
-                    'team_id'    => $team->id,
-                    'team_name'  => $team->team_name,
-                    'team_tag'   => $team->team_tag,
-                    'team_logo'  => $team->team_logo
+                    'team_id'   => $team->id,
+                    'team_name' => $team->team_name,
+                    'team_tag'  => $team->team_tag,
+                    'is_captain'=> $team->is_captain,
+                    'team_logo'=> $team->team_logo
                         ? asset('storage/' . $team->team_logo)
                         : null,
-
+    
+                    // Team size (only status 1 members)
                     'team_size' => $members->count(),
-
+    
+                    // Team members (only status 1)
                     'members' => $members->map(function ($member) {
                         return [
-                            'name'  => trim($member->user->first_name . ' ' . $member->user->last_name),
-                            'email' => $member->user->email,
-                            'phone' => $member->user->mobile,
+                            'user_id' => $member->user->id,
+                            'name'    => trim($member->user->first_name . ' ' . $member->user->last_name),
+                            'email'   => $member->user->email,
+                            'phone'   => $member->user->mobile,
                             'profile_image' => optional($member->user->profile)->profile_image
                                 ? asset('storage/' . $member->user->profile->profile_image)
                                 : null,
                         ];
-                    })->values(),
-
+                    }),
+    
+                    // Tournament info
+                    'tournament' => [
+                        'id'    => $tournament->id,
+                        'name'  => $tournament->title,
+                        'logo'  => $tournament->logo
+                            ? asset('storage/' . $tournament->logo)
+                            : null,
+                        'game' => [
+                            'id'   => $tournament->game->id ?? null,
+                            'name' => $tournament->game->name ?? null,
+                        ],
+                        'prize' => $tournament->prize_pool,
+                        'date' => [
+                            'start' => $tournament->start_date,
+                            'end'   => $tournament->end_date,
+                        ],
+                        'status' => $status,
+                    ],
+    
                     'invite_link' => $team->invite_link
                         ? 'https://www.markupdesigns.net/qec-web/tourmainpage/' .
                             rawurlencode($tournament->title) .
                             '?invite=' . $team->invite_link
                         : null,
                 ];
-            })->values();
-
-            return [
-                'tournament_id' => $tournament->id,
-                'tournament_name' => $tournament->title,
-                'tournament_logo' => $tournament->logo
-                    ? asset('storage/' . $tournament->logo)
-                    : null,
-                'game' => [
-                    'id'   => $tournament->game->id ?? null,
-                    'name' => $tournament->game->name ?? null,
-                ],
-                'prize_pool' => $tournament->prize_pool,
-                'date' => [
-                    'start' => $tournament->start_date,
-                    'end'   => $tournament->end_date,
-                ],
-                'status' => $status,
-
-                // âœ… All teams of this tournament
-                'teams' => $teams
-            ];
-        })->values();
-
-        return response()->json([
-            'status' => true,
-            'tournaments' => $tournaments
-        ]);
-
-    } catch (\Throwable $e) {
-        return response()->json([
-            'status' => false,
-            'message' => $e->getMessage()
-        ], 500);
+            });
+    
+            return response()->json([
+                'status' => true,
+                'teams'   => $teamsData
+            ]);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
-}
+    
+    public function allTeams(Request $request)
+    {
+        try {
+    
+            // team registrations with relations
+            $registrations = TournamentRegistration::with([
+                    'tournament.game',
+                    'user.profile'
+                ])
+                ->where('type', 'team')
+                ->get();
+    
+            if ($registrations->isEmpty()) {
+                return response()->json([
+                    'status' => true,
+                    'tournaments' => []
+                ]);
+            }
+    
+            // ðŸ”¹ Tournament-wise group
+            $tournaments = $registrations->groupBy('tournament_id')->map(function ($items) {
+    
+                $tournament = $items->first()->tournament;
+                $now = now();
+    
+                // Tournament status
+                if ($tournament->start_date > $now) {
+                    $status = 'upcoming';
+                } elseif ($tournament->end_date && $tournament->end_date < $now) {
+                    $status = 'completed';
+                } else {
+                    $status = 'ongoing';
+                }
+    
+                // ðŸ”¹ Team-wise group inside tournament
+                $teams = $items->groupBy('team_name')->map(function ($members) use ($tournament) {
+    
+                    $team = $members->first();
+    
+                    return [
+                        'team_id'    => $team->id,
+                        'team_name'  => $team->team_name,
+                        'team_tag'   => $team->team_tag,
+                        'team_logo'  => $team->team_logo
+                            ? asset('storage/' . $team->team_logo)
+                            : null,
+    
+                        'team_size' => $members->count(),
+    
+                        'members' => $members->map(function ($member) {
+                            return [
+                                'name'  => trim($member->user->first_name . ' ' . $member->user->last_name),
+                                'email' => $member->user->email,
+                                'phone' => $member->user->mobile,
+                                'profile_image' => optional($member->user->profile)->profile_image
+                                    ? asset('storage/' . $member->user->profile->profile_image)
+                                    : null,
+                            ];
+                        })->values(),
+    
+                        'invite_link' => $team->invite_link
+                            ? 'https://www.markupdesigns.net/qec-web/tourmainpage/' .
+                                rawurlencode($tournament->title) .
+                                '?invite=' . $team->invite_link
+                            : null,
+                    ];
+                })->values();
+    
+                return [
+                    'tournament_id' => $tournament->id,
+                    'tournament_name' => $tournament->title,
+                    'tournament_logo' => $tournament->logo
+                        ? asset('storage/' . $tournament->logo)
+                        : null,
+                    'game' => [
+                        'id'   => $tournament->game->id ?? null,
+                        'name' => $tournament->game->name ?? null,
+                    ],
+                    'prize_pool' => $tournament->prize_pool,
+                    'date' => [
+                        'start' => $tournament->start_date,
+                        'end'   => $tournament->end_date,
+                    ],
+                    'status' => $status,
+    
+                    // âœ… All teams of this tournament
+                    'teams' => $teams
+                ];
+            })->values();
+    
+            return response()->json([
+                'status' => true,
+                'tournaments' => $tournaments
+            ]);
+    
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function teamsByTournament(Request $request, $tournamentId)
     {
@@ -1310,60 +1069,72 @@ public function allTeams(Request $request)
             ], 500);
         }
     }
-
-public function myHistory(Request $request)
-{
-    try {
-        $user   = $request->user();
-        $userId = $user->id;
-
-        // Step 1: All registrations of logged-in user
-        $teams = TournamentRegistration::with(['tournament.game'])
-            ->where('user_id', $userId)
-            ->get();
-
-        if ($teams->isEmpty()) {
-            return response()->json([
-                'status' => true,
-                'history' => []
-            ]);
-        }
-
-        // Step 2: Unique team identifiers
-        $teamKeys = $teams->map(function ($team) {
-            return [
-                'tournament_id' => $team->tournament_id,
-                'team_name'     => $team->team_name,
-            ];
-        });
-
-        // Step 3: Team members of those teams
-        $membersGrouped = TournamentRegistration::with(['user.profile'])
-            ->where(function ($query) use ($teamKeys) {
-                foreach ($teamKeys as $key) {
-                    $query->orWhere(function ($q) use ($key) {
-                        $q->where('tournament_id', $key['tournament_id'])
-                            ->where('team_name', $key['team_name']);
-                    });
-                }
-            })
-            ->get()
-            ->groupBy(function ($item) {
-                return $item->tournament_id . '_' . $item->team_name;
+    
+    public function myHistory(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Unauthenticated'
+                ], 401);
+            }
+    
+            $userId = $user->id;
+    
+            // Step 1: All registrations of logged-in user
+            $teams = TournamentRegistration::with(['tournament.game'])
+                ->where('user_id', $userId)
+                ->get();
+    
+            if ($teams->isEmpty()) {
+                return response()->json([
+                    'status' => true,
+                    'history' => [],
+                    'total_earnings' => 0
+                ]);
+            }
+    
+            // Step 2: Unique team identifiers
+            $teamKeys = $teams->map(function ($team) {
+                return [
+                    'tournament_id' => $team->tournament_id,
+                    'team_name'     => $team->team_name,
+                ];
             });
-
-        // Step 4: Build response (ONLY completed)
-        $historyData = $teams
-            ->filter(function ($team) {
-                // Tournament must be completed
-                return $team->tournament->end_date && $team->tournament->end_date < now();
-            })
-            ->map(function ($team) use ($membersGrouped) {
-
+    
+            // Step 3: Team members – FIX for NULL team_name (solo registrations)
+            $membersGrouped = TournamentRegistration::with(['user.profile'])
+                ->where(function ($query) use ($teamKeys) {
+                    foreach ($teamKeys as $key) {
+                        $query->orWhere(function ($q) use ($key) {
+                            $q->where('tournament_id', $key['tournament_id']);
+                            if (is_null($key['team_name'])) {
+                                $q->whereNull('team_name');
+                            } else {
+                                $q->where('team_name', $key['team_name']);
+                            }
+                        });
+                    }
+                })
+                ->get()
+                ->groupBy(function ($item) {
+                    return $item->tournament_id . '_' . $item->team_name;
+                });
+    
+            // step 4: Filter ONLY completed tournaments (Carbon isPast)
+            $completedTeams = $teams->filter(function ($team) {
+                return $team->tournament->end_date && $team->tournament->end_date->isPast();
+            });
+    
+            // step 5: Build history with ALL prize fields
+            $historyData = $completedTeams->map(function ($team) use ($membersGrouped) {
+    
                 $tournament = $team->tournament;
                 $groupKey   = $team->tournament_id . '_' . $team->team_name;
                 $members    = $membersGrouped[$groupKey] ?? collect();
-
+    
                 return [
                     'team_id'    => $team->id,
                     'team_name'  => $team->team_name,
@@ -1372,9 +1143,9 @@ public function myHistory(Request $request)
                     'team_logo'  => $team->team_logo
                         ? asset('storage/' . $team->team_logo)
                         : null,
-
-                    'team_size' => $members->count(),
-
+    
+                    'team_size' => $members->count(),   // अब solo के लिए 1 आएगा
+    
                     'members' => $members->map(function ($member) {
                         return [
                             'user_id' => $member->user->id,
@@ -1386,7 +1157,7 @@ public function myHistory(Request $request)
                                 : null,
                         ];
                     }),
-
+    
                     'tournament' => [
                         'id'    => $tournament->id,
                         'name'  => $tournament->title,
@@ -1402,29 +1173,37 @@ public function myHistory(Request $request)
                             'start' => $tournament->start_date,
                             'end'   => $tournament->end_date,
                         ],
-                        'status' => 'completed', // Sirf completed show ho raha
+                        'status' => 'completed',
                     ],
-
+    
+    
+                    'prize_amount'        => $team->prize_amount,
+                    'prize_rank'          => $team->prize_rank,
+                    'prize_distributed_at' => $team->prize_distributed_at,
+                    'is_prize_claimed'    => (bool) $team->is_prize_claimed,
+    
                     'invite_link' => $team->invite_link
                         ? 'https://www.markupdesigns.net/qec-web/tourmainpage/' .
                         rawurlencode($tournament->title) .
                         '?invite=' . $team->invite_link
                         : null,
                 ];
-            })
-            ->values();
-
-        return response()->json([
-            'status' => true,
-            'history' => $historyData
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status'  => false,
-            'message' => $e->getMessage()
-        ], 500);
+            })->values();
+    
+            $totalEarnings = $completedTeams->sum('prize_amount');
+    
+            return response()->json([
+                'status'          => true,
+                'total_earnings'  => number_format($totalEarnings, 2), // 500.00
+                'history'         => $historyData
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
-}
 
     /**
      * Update team details (name, tag, logo) – Captain only

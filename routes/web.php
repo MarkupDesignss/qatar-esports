@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\TournamentRegistrationController;
 use App\Http\Controllers\Admin\FooterSettingController;
 use App\Http\Controllers\Admin\ContactSettingController;
 use App\Http\Controllers\Admin\PageSettingController;
+use App\Http\Controllers\Admin\WebPageController;
 use Illuminate\Support\Facades\Artisan;
 
 
@@ -153,6 +154,14 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
         // Change captain route
     Route::post('team-registrations/{teamId}/change-captain', [TournamentRegistrationController::class, 'changeCaptain'])
         ->name('team-registrations.change-captain');
+        
+    Route::post('team-registrations/distribute-prize/{tournamentId}', 
+    [TournamentRegistrationController::class, 'distributePrize'])
+    ->name('admin.team-registrations.distribute-prize');
+
+    Route::delete('team-registrations/reset-prize/{tournamentId}', 
+        [TournamentRegistrationController::class, 'resetPrize'])
+        ->name('admin.team-registrations.reset-prize');
 
 
     Route::resource('dashboard-images', DashboardImageController::class);
@@ -284,6 +293,17 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::get('news/{id}', [NewsController::class, 'edit'])->name('news.edit');;
     Route::put('news/{id}', [NewsController::class, 'update'])->name('news.update');;
     Route::delete('news/delete/{id}', [NewsController::class, 'destroy'])->name('news.destroy');;
+    
+     /*---------------------------------Web Page Controller-----------------------------------------------*/
+         Route::prefix('web-pages')->name('web.page.')->group(function () {
+            Route::get('/list', [WebPageController::class,'index'])->name('list');
+            Route::get('/add', [WebPageController::class,'create'])->name('create');
+            Route::post('/store', [WebPageController::class,'store'])->name('store');
+            Route::get('/edit/{id}', [WebPageController::class,'edit'])->name('edit');
+            Route::post('/update/{id}', [WebPageController::class,'update'])->name('update');
+            Route::delete('/destroy/{id}', [WebPageController::class,'destroy'])->name('destroy');
+        });
+      /*---------------------------------End Web Page Controller-------------------------------------------*/
 
     // Tournament Registrations
     Route::get('tournament-registrations/solo', [TournamentRegistrationController::class, 'soloIndex'])->name('tournament-registrations.solo');

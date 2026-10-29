@@ -6,7 +6,7 @@
     {{-- Page Header --}}
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
         <h4 class="mb-0 h5 h4-sm fw-bold text-gray-800">
-            <i class="bi bi-file-earmark-text me-2"></i>Legal Pages
+            <i class="bi bi-file-earmark-text me-2"></i>Legal & Auth Pages
         </h4>
     </div>
 
@@ -18,10 +18,9 @@
         </div>
     @endif
 
-    
-
-    {{-- Legal Pages Cards --}}
+    {{-- Legal + Auth Pages Cards --}}
     <div class="row g-3 g-sm-4">
+
         {{-- Privacy Policy --}}
         <div class="col-12 col-md-6 col-xl-4">
             <div class="card h-100 shadow-sm">
@@ -38,7 +37,7 @@
                         <span class="badge bg-light text-dark small"><i class="bi bi-link-45deg me-1"></i> {{ $privacy->slug ?? 'N/A' }}</span>
                     </div>
                     <div class="mt-2">
-                        <small class="text-muted">Updated: {{ $privacy->updated_at->format('d M Y') ?? 'N/A' }}</small>
+                        <small class="text-muted">Updated: {{ $privacy->updated_at?->format('d M Y') ?? 'N/A' }}</small>
                     </div>
                 </div>
                 <div class="card-footer bg-white border-top-0 py-2">
@@ -67,7 +66,7 @@
                         <span class="badge bg-light text-dark small"><i class="bi bi-link-45deg me-1"></i> {{ $terms->slug ?? 'N/A' }}</span>
                     </div>
                     <div class="mt-2">
-                        <small class="text-muted">Updated: {{ $terms->updated_at->format('d M Y') ?? 'N/A' }}</small>
+                        <small class="text-muted">Updated: {{ $terms->updated_at?->format('d M Y') ?? 'N/A' }}</small>
                     </div>
                 </div>
                 <div class="card-footer bg-white border-top-0 py-2">
@@ -96,7 +95,7 @@
                         <span class="badge bg-light text-dark small"><i class="bi bi-link-45deg me-1"></i> {{ $cookie->slug ?? 'N/A' }}</span>
                     </div>
                     <div class="mt-2">
-                        <small class="text-muted">Updated: {{ $cookie->updated_at->format('d M Y') ?? 'N/A' }}</small>
+                        <small class="text-muted">Updated: {{ $cookie->updated_at?->format('d M Y') ?? 'N/A' }}</small>
                     </div>
                 </div>
                 <div class="card-footer bg-white border-top-0 py-2">
@@ -108,8 +107,95 @@
                 </div>
             </div>
         </div>
-    </div>
 
+        {{-- Signup Page --}}
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header text-white py-2" style="background-color:#6f42c1;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-plus me-2"></i>
+                        <h6 class="mb-0 fw-bold">Signup Page</h6>
+                    </div>
+                </div>
+                <div class="card-body p-3">
+                    <h6 class="fw-bold small text-truncate">{{ $signup->title ?? 'N/A' }}</h6>
+                    <p class="text-muted small">{{ Str::limit(strip_tags($signup->content ?? ''), 120) }}</p>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark small"><i class="bi bi-link-45deg me-1"></i> {{ $signup->slug ?? 'N/A' }}</span>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Updated: {{ $signup->updated_at?->format('d M Y') ?? 'N/A' }}</small>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0 py-2">
+                    @if (hasPermission('legal.update'))
+                    <a href="{{ route('admin.pages.edit', $signup->slug) }}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- Signin Page --}}
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header text-white py-2" style="background-color:#0d6efd;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        <h6 class="mb-0 fw-bold">Signin Page</h6>
+                    </div>
+                </div>
+                <div class="card-body p-3">
+                    <h6 class="fw-bold small text-truncate">{{ $signin->title ?? 'N/A' }}</h6>
+                    <p class="text-muted small">{{ Str::limit(strip_tags($signin->content ?? ''), 120) }}</p>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark small"><i class="bi bi-link-45deg me-1"></i> {{ $signin->slug ?? 'N/A' }}</span>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Updated: {{ $signin->updated_at?->format('d M Y') ?? 'N/A' }}</small>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0 py-2">
+                    @if (hasPermission('legal.update'))
+                    <a href="{{ route('admin.pages.edit', $signin->slug) }}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- 🆕 Sign Up To Esports QEC --}}
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header text-white py-2" style="background-color:#fd7e14;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-trophy me-2"></i>
+                        <h6 class="mb-0 fw-bold">Sign Up To Esports QEC</h6>
+                    </div>
+                </div>
+                <div class="card-body p-3">
+                    <h6 class="fw-bold small text-truncate">{{ $signupEsports->title ?? 'N/A' }}</h6>
+                    <p class="text-muted small">{{ Str::limit(strip_tags($signupEsports->content ?? ''), 120) }}</p>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark small"><i class="bi bi-link-45deg me-1"></i> {{ $signupEsports->slug ?? 'N/A' }}</span>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Updated: {{ $signupEsports->updated_at?->format('d M Y') ?? 'N/A' }}</small>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0 py-2">
+                    @if (hasPermission('legal.update'))
+                    <a href="{{ route('admin.pages.edit', $signupEsports->slug) }}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+    </div>
 
 </div>
 @endsection

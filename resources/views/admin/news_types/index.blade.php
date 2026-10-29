@@ -8,7 +8,8 @@
         <h4 class="mb-0 h5 h4-sm fw-bold text-gray-800">
             <i class="bi bi-tags me-2"></i>News Types
         </h4>
-        @if (hasPermission('news.create'))
+        
+        @if (hasPermission('news_type.create'))
         <a href="{{ route('admin.news-types.create') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-circle me-1"></i> Add Type
         </a>
@@ -34,7 +35,7 @@
                             <th class="text-center">Name</th>
                             <th class="text-center" width="100">Status</th>
                             <th class="text-center" width="120">Sort Order</th>
-                            @if (hasPermission('news.edit') || hasPermission('news.delete'))
+                            @if (hasPermission('news_type.edit') || hasPermission('news_type.delete'))
                             <th class="text-center" width="150">Action</th>
                             @endif
                         </tr>
@@ -61,7 +62,7 @@
                                 
                                 <td>
                                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center align-items-center">
-                                        @if (hasPermission('news.edit'))
+                                        @if (hasPermission('news_type.edit'))
                                         <a href="{{ route('admin.news-types.edit', $type) }}" 
                                            class="btn btn-warning btn-sm w-100 w-sm-auto"
                                            data-bs-toggle="tooltip"
@@ -71,7 +72,7 @@
                                         </a>
                                         @endif
                                         
-                                        @if (hasPermission('news.delete'))
+                                        @if (hasPermission('news_type.delete'))
                                         <form action="{{ route('admin.news-types.destroy', $type) }}" 
                                               method="POST" 
                                               class="d-inline w-100 w-sm-auto">

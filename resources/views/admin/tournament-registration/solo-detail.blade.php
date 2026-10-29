@@ -161,7 +161,6 @@
                                     <td>
                                         <div class="d-flex gap-1 flex-wrap">
                                             <!-- Declare Winner Button -->
-                                          <!-- Declare Winner Button -->
                                             @if (!$tournament->winner_team_id)
                                                 <form
                                                     action="{{ route('admin.solo-registrations.declare-winner', $tournament->id) }}"
@@ -214,31 +213,39 @@
             </div>
         </div>
 
-        <!-- Prize Distribution Section - Only for Winner -->
+        <!-- ========== EDITED PRIZE DISTRIBUTION SECTION ========== -->
         @if ($tournament->winner_team_id && $totalPrize > 0 && $tournamentEnded)
             <div class="card mt-3">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">
                         <i class="fas fa-money-bill-wave me-2"></i>
                         @if ($hasPrizeDistributed)
-                            Prize Distribution Details - {{ $winner->name ?? 'Winner' }}
+                            Edit Prize Distribution - {{ $winner->name ?? 'Winner' }}
                         @else
                             Distribute Prize Money to Winner
                         @endif
                     </h5>
                 </div>
                 <div class="card-body">
-                    @if ($hasPrizeDistributed && $winner && !is_null($winner->prize_amount))
-                        {{-- View Mode - Show distributed prize for winner only --}}
+                    @if ($hasPrizeDistributed)
+                        <div class="alert alert-info">
+                            <i class="fas fa-edit me-2"></i> 
+                            You can update the prize amount and rank below. 
+                            Changes will overwrite the existing distribution.
+                        </div>
+                    @endif
+
+                    {{-- MAIN FORM for distributing/updating prize --}}
+                    <form action="{{ route('admin.solo-registrations.distribute-prize', $tournament->id) }}" method="POST">
+                        @csrf
+
                         <div class="table-responsive">
                             <table class="table table-bordered">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Player</th>
-                                        <th>Prize Amount ()</th>
-                                        <th>Rank/Position</th>
-                                        <th>Status</th>
-                                        {{-- <th>Action</th> --}}
+                                        <th>Prize Amount (QR)</th>
+                                        <th>Rank / Position</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -246,162 +253,76 @@
                                         <td>
                                             {{ $winner->name }}
                                             <span class="badge bg-warning ms-1">Winner</span>
+                                            <small class="d-block text-muted">Only the winner is eligible for prize</small>
                                         </td>
                                         <td>
-                                            @if (!is_null($winner->prize_amount))
-                                                <span
-                                                    class="badge bg-{{ $winner->prize_amount > 0 ? 'success' : 'secondary' }} p-2">
-                                                    {{ number_format($winner->prize_amount, 2) }}
-                                                </span>
-                                            @else
-                                                <span class="text-muted">Not assigned</span>
-                                            @endif
+                                            <input type="hidden" name="distributions[0][registration_id]" 
+                                                   value="{{ $winner->id }}">
+                                            <input type="number" 
+                                                   class="form-control prize-amount @error('distributions.0.amount') is-invalid @enderror"
+                                                   name="distributions[0][amount]"
+                                                   value="{{ old('distributions.0.amount', $winner->prize_amount ?? 0) }}"
+                                                   min="0" step="0.01" placeholder="Enter amount" 
+                                                   style="max-width: 200px;">
+                                            @error('distributions.0.amount')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </td>
                                         <td>
-                                            @if ($winner->prize_rank)
-                                                <span class="badge bg-dark">{{ $winner->prize_rank }}</span>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
+                                            <input type="text" class="form-control" 
+                                                   name="distributions[0][rank]"
+                                                   value="{{ old('distributions.0.rank', $winner->prize_rank ?? '') }}"
+                                                   placeholder="e.g., 1st, 2nd, MVP" style="max-width: 200px;">
                                         </td>
-                                        <td>
-                                            @if ($winner->is_prize_claimed)
-                                                <span class="badge bg-success">Claimed</span>
-                                                <small class="d-block text-muted">
-                                                    {{ $winner->prize_distributed_at ? $winner->prize_distributed_at->format('Y-m-d') : '' }}
-                                                </small>
-                                            @elseif(!is_null($winner->prize_amount) && $winner->prize_amount > 0)
-                                                <span class="badge bg-warning">Pending</span>
-                                            @else
-                                                <span class="badge bg-secondary">-</span>
-                                            @endif
-                                        </td>
-                                        {{-- <td>
-                                            @if (!is_null($winner->prize_amount) && $winner->prize_amount > 0 && !$winner->is_prize_claimed)
-                                                <form
-                                                    action="{{ route('admin.solo-registrations.mark-claimed', $winner->id) }}"
-                                                    method="POST" class="d-inline">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="btn btn-sm btn-info"
-                                                        onclick="return confirm('Mark this prize as claimed?');">
-                                                        <i class="fas fa-check"></i> Mark Claimed
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        </td> --}}
                                     </tr>
                                 </tbody>
                                 <tfoot>
                                     <tr class="table-active">
                                         <td class="text-end fw-bold">Total Distributed:</td>
-                                        <td colspan="4">
-                                            <span class="fw-bold text-success">
-                                                {{ number_format($winner->prize_amount ?? 0, 2) }}
-                                            </span>
+                                        <td colspan="2">
+                                            <span id="totalAmount" class="fw-bold text-success">0.00</span>
                                             <small class="text-muted ms-2">
-                                                (of {{ number_format($totalPrize, 2) }})
+                                                (Max: {{ number_format($totalPrize, 2) }})
                                             </small>
                                         </td>
                                     </tr>
                                     <tr class="table-active">
                                         <td class="text-end fw-bold">Remaining:</td>
-                                        <td colspan="4">
-                                            <span class="fw-bold text-warning">
-                                                {{ number_format($totalPrize - ($winner->prize_amount ?? 0), 2) }}
-                                            </span>
+                                        <td colspan="2">
+                                            <span id="remainingAmount" 
+                                                  class="fw-bold text-warning">{{ number_format($totalPrize, 2) }}</span>
                                         </td>
                                     </tr>
                                 </tfoot>
                             </table>
                         </div>
 
-                        {{-- Action buttons for reset --}}
-                        {{-- <div class="mt-3">
-                            <form action="{{ route('admin.solo-registrations.reset-prize', $tournament->id) }}"
-                                method="POST"
-                                onsubmit="return confirm('Are you sure you want to reset the prize distribution? This action cannot be undone.');"
-                                class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-undo me-1"></i> Reset Distribution
-                                </button>
-                            </form>
-                        </div> --}}
-                    @elseif($winner)
-                        {{-- Edit Mode - Show input field for winner only --}}
-                        <form action="{{ route('admin.solo-registrations.distribute-prize', $tournament->id) }}"
-                            method="POST">
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary" onclick="return validateDistribution()">
+                                <i class="fas fa-save me-1"></i> 
+                                {{ $hasPrizeDistributed ? 'Update Prize Distribution' : 'Distribute Prize' }}
+                            </button>
+                            <!--<button type="reset" class="btn btn-secondary">-->
+                            <!--    <i class="fas fa-undo me-1"></i> Reset Form-->
+                            <!--</button>-->
+                        </div>
+                    </form>
+                    {{-- END of main form --}}
+
+                    {{-- RESET FORM – placed outside the main form --}}
+                    @if ($hasPrizeDistributed)
+                        <form action="{{ route('admin.solo-registrations.reset-prize', $tournament->id) }}" 
+                              method="POST" 
+                              style="margin-top: 10px;">
                             @csrf
-
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Player</th>
-                                            <th>Prize Amount ()</th>
-                                            <th>Rank/Position</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="table-success">
-                                            <td>
-                                                {{ $winner->name }}
-                                                <span class="badge bg-warning ms-1">Winner</span>
-                                                <small class="d-block text-muted">Only the winner is eligible for
-                                                    prize</small>
-                                            </td>
-                                            <td>
-                                                <input type="hidden" name="distributions[0][registration_id]"
-                                                    value="{{ $winner->id }}">
-                                                <input type="number"
-                                                    class="form-control prize-amount @error('distributions.0.amount') is-invalid @enderror"
-                                                    name="distributions[0][amount]"
-                                                    value="{{ old('distributions.0.amount', 0) }}" min="0"
-                                                    step="0.01" placeholder="Enter amount" style="max-width: 200px;">
-                                                @error('distributions.0.amount')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </td>
-                                            <td>
-                                                <input type="text" class="form-control" name="distributions[0][rank]"
-                                                    value="{{ old('distributions.0.rank', '1st') }}"
-                                                    placeholder="e.g., 1st, 2nd, MVP" style="max-width: 200px;">
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr class="table-active">
-                                            <td class="text-end fw-bold">Total Distributed:</td>
-                                            <td colspan="2">
-                                                <span id="totalAmount" class="fw-bold text-success">0.00</span>
-                                                <small class="text-muted ms-2">
-                                                    (Max: {{ number_format($totalPrize, 2) }})
-                                                </small>
-                                            </td>
-                                        </tr>
-                                        <tr class="table-active">
-                                            <td class="text-end fw-bold">Remaining:</td>
-                                            <td colspan="2">
-                                                <span id="remainingAmount"
-                                                    class="fw-bold text-warning">{{ number_format($totalPrize, 2) }}</span>
-                                            </td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-
-                            <div class="mt-3">
-                                <button type="submit" class="btn btn-primary" onclick="return validateDistribution()">
-                                    <i class="fas fa-save me-1"></i> Distribute Prize
-                                </button>
-                                <button type="reset" class="btn btn-secondary">
-                                    <i class="fas fa-undo me-1"></i> Reset
-                                </button>
-                            </div>
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger" 
+                                    onclick="return confirm('Are you sure you want to reset the prize distribution? This action cannot be undone.')">
+                                <i class="fas fa-undo me-1"></i> Reset All
+                            </button>
                         </form>
                     @endif
+
                 </div>
             </div>
         @elseif($tournament->winner_team_id && $totalPrize == 0)
@@ -421,6 +342,8 @@
                 Please declare a winner first to distribute the prize money.
             </div>
         @endif
+        <!-- ========== END EDITED SECTION ========== -->
+
     </div>
 @endsection
 

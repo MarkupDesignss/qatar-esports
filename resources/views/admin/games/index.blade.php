@@ -83,7 +83,7 @@
                             <th class="d-none d-sm-table-cell text-center">Status</th>
                             @endif
                             <th class="text-center">Tournaments</th>
-                            <th class="text-end d-none d-lg-table-cell">Created</th>
+                            <th class="text-center d-none d-lg-table-cell">Created</th>
                             @if (hasPermission('games.edit'))
                             <th class="text-center">Action</th>
                             @endif
@@ -147,7 +147,7 @@
                                 </td>
 
                                 {{-- Created --}}
-                                <td class="text-end d-none d-lg-table-cell small">
+                                <td class="text-center d-none d-lg-table-cell small">
                                     {{ optional($game->created_at)->format('d M Y') ?? '-' }}
                                 </td>
 

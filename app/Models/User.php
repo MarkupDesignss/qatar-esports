@@ -19,11 +19,14 @@ class User extends Authenticatable
         'last_name',
         'username',
         'email',
+        'pending_email',
+        'email_verified',
         'country_code',
         'mobile',
         'password',
         'otp',
         'otp_expires_at',
+        'otp_sent_at',
         'status',
     ];
 
@@ -40,7 +43,9 @@ class User extends Authenticatable
      * Attribute casting
      */
     protected $casts = [
+        'email_verified' => 'boolean',
         'otp_expires_at' => 'datetime',
+        'otp_sent_at'    => 'datetime',
         'created_at'     => 'datetime',
         'updated_at'     => 'datetime',
     ];
@@ -59,5 +64,4 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserSocialLink::class, 'user_id');
     }
-
 }

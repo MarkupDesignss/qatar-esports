@@ -8,7 +8,7 @@
         <h4 class="mb-0 h5 h4-sm fw-bold text-gray-800">
             <i class="bi bi-info-circle me-2"></i>About Us
         </h4>
-        @if (hasPermission('about.update'))
+        @if (hasPermission('about.create'))
         <a href="{{ route('admin.about.create') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-circle me-1"></i> Add Section
         </a>
@@ -87,7 +87,7 @@
                             <th class="text-center" width="100">Type</th>
                             <th class="text-center">Title</th>
                             <th class="text-center" width="100">Status</th>
-                            @if (hasPermission('about.update'))
+                            @if (hasPermission('about.update') || hasPermission('about.update'))
                             <th class="text-center" width="150">Action</th>
                             @endif
                         </tr>
@@ -121,9 +121,9 @@
                                         {{ $section->status ? 'Active' : 'Inactive' }}
                                     </span>
                                 </td>
-                                
-                                @if (hasPermission('about.update'))
+                                @if (hasPermission('about.update') || hasPermission('about.delete'))
                                 <td>
+                                @if (hasPermission('about.update'))
                                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center align-items-center">
                                         <a href="{{ route('admin.about.edit', $section->id) }}" 
                                            class="btn btn-warning btn-sm w-100 w-sm-auto"
@@ -132,7 +132,9 @@
                                             <i class="bi bi-pencil-square"></i>
                                             <span class="d-none d-sm-inline"> Edit</span>
                                         </a>
+                                @endif
                                         
+                                @if (hasPermission('about.delete'))
                                         <form action="{{ route('admin.about.destroy', $section->id) }}" 
                                               method="POST" 
                                               class="d-inline w-100 w-sm-auto" 
@@ -146,6 +148,7 @@
                                                 <span class="d-none d-sm-inline"> Delete</span>
                                             </button>
                                         </form>
+                                @endif
                                     </div>
                                 </td>
                                 @endif

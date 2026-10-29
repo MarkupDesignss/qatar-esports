@@ -117,10 +117,30 @@
                         </div>
 
                         {{-- Rules with CKEditor --}}
+                        <!--<div class="mb-3">-->
+                        <!--    <label class="form-label fw-semibold">Rules</label>-->
+                        <!--    <textarea name="rules" id="rules" rows="10"-->
+                        <!--        class="ckeditor form-control">{{ old('rules', $tournament->rules) }}</textarea>-->
+                        <!--</div>-->
+                        {{-- Rulebook PDF (stored in `rules` column) --}}
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Rules</label>
-                            <textarea name="rules" id="rules" rows="10"
-                                class="ckeditor form-control">{{ old('rules', $tournament->rules) }}</textarea>
+                            <label class="form-label fw-semibold">
+                                Rulebook PDF
+                            </label>
+                        
+                            @if($tournament->rules)
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-check-circle text-success me-1"></i>
+                                    Current PDF uploaded — upload new one to replace
+                                </p>
+                            @endif
+                        
+                            <input type="file" 
+                                   name="rules" 
+                                   class="form-control @error('rules') is-invalid @enderror"
+                                   accept="application/pdf">
+                            <small class="text-muted">Upload PDF (max 5MB)</small>
+                            @error('rules') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
                     </div>
@@ -376,88 +396,143 @@
     </div>
 </div>
 
-{{-- CKEditor 5 Script --}}
-<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+{{-- CKEditor 5 Super Build --}}
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.js"></script>
+<link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.css">
+
+<style>
+.ck-content ul,
+.ck-editor__editable ul {
+    list-style-type: disc !important;
+    padding-left: 2rem !important;
+    margin: 0.5rem 0 !important;
+}
+.ck-content ol,
+.ck-editor__editable ol {
+    list-style-type: decimal !important;
+    padding-left: 2rem !important;
+    margin: 0.5rem 0 !important;
+}
+.ck-content li,
+.ck-editor__editable li {
+    display: list-item !important;
+    margin-bottom: 0.25rem !important;
+}
+.ck-content ul ul, .ck-editor__editable ul ul { list-style-type: circle !important; }
+.ck-content ul ul ul, .ck-editor__editable ul ul ul { list-style-type: square !important; }
+.ck-content ol ol, .ck-editor__editable ol ol { list-style-type: lower-alpha !important; }
+.ck-content ol ol ol, .ck-editor__editable ol ol ol { list-style-type: lower-roman !important; }
+</style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize CKEditor on both textareas
-        const descriptionElement = document.querySelector('#description');
-        const rulesElement = document.querySelector('#rules');
+document.addEventListener('DOMContentLoaded', function () {
 
-        let descriptionEditor, rulesEditor;
+    // ===== Team Size Logic =====
+    const formatSelect = document.querySelector('select[name="format"]');
+    const teamSizeInput = document.getElementById('team_size');
 
-        if (descriptionElement) {
-            ClassicEditor
-                .create(descriptionElement, {
-                    toolbar: {
-                        items: [
-                            'heading', '|',
-                            'bold', 'italic', 'underline', 'strikethrough', '|',
-                            'bulletedList', 'numberedList', '|',
-                            'alignment', '|',
-                            'link', 'blockQuote', '|',
-                            'undo', 'redo'
-                        ]
-                    },
-                    heading: {
-                        options: [
-                            { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                            { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-                            { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-                            { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
-                        ]
-                    },
-                    language: 'en',
-                })
-                .then(editor => {
-                    descriptionEditor = editor;
-                })
-                .catch(error => console.error(error));
+    function updateTeamSizeField() {
+        if (!formatSelect || !teamSizeInput) return;
+        if (formatSelect.value === 'solo') {
+            teamSizeInput.value = 1;
+            teamSizeInput.disabled = true;
+        } else {
+            teamSizeInput.disabled = false;
         }
+    }
+    updateTeamSizeField();
+    if (formatSelect) formatSelect.addEventListener('change', updateTeamSizeField);
 
-        if (rulesElement) {
-            ClassicEditor
-                .create(rulesElement, {
-                    toolbar: {
-                        items: [
-                            'heading', '|',
-                            'bold', 'italic', 'underline', 'strikethrough', '|',
-                            'bulletedList', 'numberedList', '|',
-                            'alignment', '|',
-                            'link', 'blockQuote', '|',
-                            'undo', 'redo'
-                        ]
-                    },
-                    heading: {
-                        options: [
-                            { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                            { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-                            { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-                            { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
-                        ]
-                    },
-                    language: 'en',
-                })
-                .then(editor => {
-                    rulesEditor = editor;
-                })
-                .catch(error => console.error(error));
-        }
 
-        // Sync editor content to textarea before form submission
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                if (descriptionEditor) {
-                    descriptionEditor.updateSourceElement();
-                }
-                if (rulesEditor) {
-                    rulesEditor.updateSourceElement();
-                }
+    // ===== CKEditor Super Build Init =====
+    const editors = [];
+
+    document.querySelectorAll('.ckeditor').forEach(textarea => {
+        CKEDITOR.ClassicEditor
+            .create(textarea, {
+                toolbar: {
+                    items: [
+                        'heading', '|',
+                        'bold', 'italic', 'underline', 'strikethrough', '|',
+                        'bulletedList', 'numberedList', '|',
+                        'alignment', '|',
+                        'link', 'blockQuote', 'insertTable', '|',
+                        'undo', 'redo'
+                    ],
+                    shouldNotGroupWhenFull: true
+                },
+                heading: {
+                    options: [
+                        { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                        { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                        { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                        { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+                    ]
+                },
+                list: {
+                    properties: {
+                        styles: true,
+                        startIndex: true,
+                        reversed: true
+                    }
+                },
+                alignment: {
+                    options: ['left', 'center', 'right', 'justify']
+                },
+                language: 'en',
+
+                // ✅ FIX: Remove premium collaboration plugins that require channelId
+                removePlugins: [
+                    // Collaboration / Real-time
+                    'RealTimeCollaborativeComments',
+                    'RealTimeCollaborativeTrackChanges',
+                    'RealTimeCollaborativeRevisionHistory',
+                    'RealTimeCollaborativeEditing',
+                    'PresenceList',
+                    'Comments',
+                    'CommentsArchive',
+                    'TrackChanges',
+                    'TrackChangesData',
+                    'TrackChangesEditing',
+                    'RevisionHistory',
+                    'Collaboration',
+                    // Premium extras included in super-build
+                    'Pagination',
+                    'WProofreader',
+                    'MathType',
+                    'SlashCommand',
+                    'Template',
+                    'DocumentOutline',
+                    'FormatPainter',
+                    'TableOfContents',
+                    'ExportWord',
+                    'ExportPdf',
+                    'ImportWord',
+                    'AIAssistant',
+                    'OpenAI',
+                    'CaseChange',
+                    'MultiLevelList',
+                    'PasteFromOfficeEnhanced',
+                    'PasteFromOffice'
+                ]
+            })
+            .then(editor => {
+                editors.push(editor);
+                textarea.setAttribute('data-editor-initialized', 'true');
+            })
+            .catch(error => {
+                console.error('CKEditor init error:', error);
             });
-        }
     });
+
+    // ===== Sync before submit =====
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', () => {
+            editors.forEach(editor => editor.updateSourceElement());
+        });
+    }
+});
 </script>
 
 @endsection

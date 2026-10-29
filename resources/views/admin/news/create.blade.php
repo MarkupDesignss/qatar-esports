@@ -49,13 +49,13 @@
                             @enderror
                         </div>
 
-                        {{-- Description --}}
+                        {{-- Description with CKEditor Super Build --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
                             <textarea name="description"
                                       id="description"
-                                      rows="5"
-                                      class="form-control form-control-sm @error('description') is-invalid @enderror"
+                                      rows="10"
+                                      class="ckeditor form-control form-control-sm @error('description') is-invalid @enderror"
                                       placeholder="Enter news description"
                                       required>{{ old('description') }}</textarea>
                             @error('description')
@@ -144,36 +144,128 @@
     </div>
 </div>
 
-<!-- CKEditor 5 CDN -->
-<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+{{-- CKEditor 5 Super Build (Same as Tournaments / Services) --}}
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.js"></script>
+<link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.css">
+
+<style>
+.ck-content ul,
+.ck-editor__editable ul {
+    list-style-type: disc !important;
+    padding-left: 2rem !important;
+    margin: 0.5rem 0 !important;
+}
+.ck-content ol,
+.ck-editor__editable ol {
+    list-style-type: decimal !important;
+    padding-left: 2rem !important;
+    margin: 0.5rem 0 !important;
+}
+.ck-content li,
+.ck-editor__editable li {
+    display: list-item !important;
+    margin-bottom: 0.25rem !important;
+}
+.ck-content ul ul, .ck-editor__editable ul ul { list-style-type: circle !important; }
+.ck-content ul ul ul, .ck-editor__editable ul ul ul { list-style-type: square !important; }
+.ck-content ol ol, .ck-editor__editable ol ol { list-style-type: lower-alpha !important; }
+.ck-content ol ol ol, .ck-editor__editable ol ol ol { list-style-type: lower-roman !important; }
+</style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let editorInstance;
-        const textarea = document.getElementById('description');
+document.addEventListener('DOMContentLoaded', function () {
 
-        if (textarea) {
-            ClassicEditor.create(textarea, {
-                toolbar: ['bold', 'italic', 'bulletedList', 'numberedList', 'link', 'undo', 'redo']
-            }).then(editor => {
-                editorInstance = editor;
-            }).catch(error => console.error(error));
-        }
+    // ===== CKEditor Super Build Init =====
+    const editors = [];
 
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function() {
-                if (editorInstance) {
-                    editorInstance.updateSourceElement();
-                }
+    document.querySelectorAll('.ckeditor').forEach(textarea => {
+        CKEDITOR.ClassicEditor
+            .create(textarea, {
+                toolbar: {
+                    items: [
+                        'heading', '|',
+                        'bold', 'italic', 'underline', 'strikethrough', '|',
+                        'bulletedList', 'numberedList', '|',
+                        'alignment', '|',
+                        'link', 'blockQuote', 'insertTable', '|',
+                        'undo', 'redo'
+                    ],
+                    shouldNotGroupWhenFull: true
+                },
+                heading: {
+                    options: [
+                        { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                        { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                        { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                        { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+                    ]
+                },
+                list: {
+                    properties: {
+                        styles: true,
+                        startIndex: true,
+                        reversed: true
+                    }
+                },
+                alignment: {
+                    options: ['left', 'center', 'right', 'justify']
+                },
+                language: 'en',
+                removePlugins: [
+                    'RealTimeCollaborativeComments',
+                    'RealTimeCollaborativeTrackChanges',
+                    'RealTimeCollaborativeRevisionHistory',
+                    'RealTimeCollaborativeEditing',
+                    'PresenceList',
+                    'Comments',
+                    'CommentsArchive',
+                    'TrackChanges',
+                    'TrackChangesData',
+                    'TrackChangesEditing',
+                    'RevisionHistory',
+                    'Collaboration',
+                    'Pagination',
+                    'WProofreader',
+                    'MathType',
+                    'SlashCommand',
+                    'Template',
+                    'DocumentOutline',
+                    'FormatPainter',
+                    'TableOfContents',
+                    'ExportWord',
+                    'ExportPdf',
+                    'ImportWord',
+                    'AIAssistant',
+                    'OpenAI',
+                    'CaseChange',
+                    'MultiLevelList',
+                    'PasteFromOfficeEnhanced',
+                    'PasteFromOffice'
+                ]
+            })
+            .then(editor => {
+                editors.push(editor);
+                textarea.setAttribute('data-editor-initialized', 'true');
+            })
+            .catch(error => {
+                console.error('CKEditor init error:', error);
             });
-        }
+    });
 
-        // Thumbnail Preview
-        const fileInput = document.querySelector('input[name="thumbnail"]');
-        const previewPlaceholder = document.getElementById('previewPlaceholder');
-        const imagePreview = document.getElementById('imagePreview');
+    // ===== Sync editors before submit =====
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', () => {
+            editors.forEach(editor => editor.updateSourceElement());
+        });
+    }
 
+    // ===== Thumbnail Preview =====
+    const fileInput = document.querySelector('input[name="thumbnail"]');
+    const previewPlaceholder = document.getElementById('previewPlaceholder');
+    const imagePreview = document.getElementById('imagePreview');
+
+    if (fileInput && imagePreview && previewPlaceholder) {
         fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -181,8 +273,12 @@
                 imagePreview.src = fileURL;
                 imagePreview.classList.remove('d-none');
                 previewPlaceholder.classList.add('d-none');
+            } else {
+                imagePreview.classList.add('d-none');
+                previewPlaceholder.classList.remove('d-none');
             }
         });
-    });
+    }
+});
 </script>
 @endsection

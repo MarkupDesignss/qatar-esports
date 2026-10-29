@@ -72,6 +72,34 @@
                                 @endif
                             </td>
                         </tr>
+                        
+                        {{-- CTA Heading --}}
+                        <tr>
+                            <th class="bg-light text-nowrap" style="width: 25%;">
+                                <i class="bi bi-megaphone me-2"></i>CTA Heading
+                            </th>
+                            <td class="small">
+                                @if($settings->cta_heading ?? null)
+                                    {{ $settings->cta_heading }}
+                                @else
+                                    <span class="text-muted fst-italic">Not set</span>
+                                @endif
+                            </td>
+                        </tr>
+                        
+                        {{-- CTA Quote --}}
+                        <tr>
+                            <th class="bg-light text-nowrap" style="width: 25%;">
+                                <i class="bi bi-chat-quote me-2"></i>CTA Quote
+                            </th>
+                            <td class="small">
+                                @if($settings->cta_quote ?? null)
+                                    {{ strip_tags($settings->cta_quote) }}
+                                @else
+                                    <span class="text-muted fst-italic">Not set</span>
+                                @endif
+                            </td>
+                        </tr>
 
                         {{-- Social Media Section Header --}}
                         <tr class="table-secondary">

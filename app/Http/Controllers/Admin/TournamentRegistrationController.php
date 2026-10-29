@@ -14,12 +14,40 @@ use Illuminate\Support\Str;
 use App\Mail\TeamMemberNotification;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-
 use Illuminate\Support\Facades\Redirect;
 
 
 class TournamentRegistrationController extends Controller
 {
+    
+    /**
+     * Check if a user has any active registration in a tournament that overlaps with given dates.
+     */
+    private function hasOverlappingTournament($userId, $newStart, $newEnd, $excludeTournamentId = null)
+    {
+        if (empty($newStart) || empty($newEnd)) {
+            return false;
+        }
+
+        $registrations = TournamentRegistration::where('user_id', $userId)
+            ->where('status', 1)
+            ->with('tournament')
+            ->get();
+
+        foreach ($registrations as $reg) {
+            $tournament = $reg->tournament;
+            if ($excludeTournamentId && $tournament->id == $excludeTournamentId) {
+                continue;
+            }
+            if ($tournament->start_date && $tournament->end_date) {
+                if ($newStart <= $tournament->end_date && $newEnd >= $tournament->start_date) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     /**
      * Display solo registrations grouped by tournament.
      */
@@ -60,18 +88,34 @@ class TournamentRegistrationController extends Controller
     /**
      * Display team registrations grouped by tournament.
      */
+    // public function teamIndex(Request $request)
+    // {
+    //     $tournaments = Tournament::withCount([
+    //         'registrations' => function ($q) {
+    //             $q->where('format', 'team');
+    //         }
+    //     ])
+    //         ->having('registrations_count', '>', 0)
+    //         ->orderByDesc('registrations_count')
+    //         ->paginate(10);
+
+    //     return view('admin.tournament-registration.team', [
+    //         'tournaments' => $tournaments,
+    //     ]);
+    // }
+    
     public function teamIndex(Request $request)
     {
         $tournaments = Tournament::withCount([
             'registrations' => function ($q) {
-                $q->where('format', 'team')
-                    ->where('is_captain', true);
+                $q->where('type', 'team');
+                 // ->where('is_captain', 1);
             }
         ])
-            ->having('registrations_count', '>', 0)
-            ->orderByDesc('registrations_count')
-            ->paginate(10);
-
+        ->having('registrations_count', '>', 0)
+        ->orderByDesc('registrations_count')
+        ->paginate(10);
+    
         return view('admin.tournament-registration.team', [
             'tournaments' => $tournaments,
         ]);
@@ -83,14 +127,14 @@ class TournamentRegistrationController extends Controller
     public function teamDetail($tournamentId)
     {
         $tournament = Tournament::findOrFail($tournamentId);
-
+    
         $registrations = TournamentRegistration::with(['user'])
             ->where('tournament_id', $tournamentId)
             ->where('type', 'team')
-            ->where('is_captain', true)
+           // ->where('is_captain', 1)
             ->orderByDesc('created_at')
             ->paginate(10);
-
+    
         return view('admin.tournament-registration.team-detail', [
             'tournament' => $tournament,
             'registrations' => $registrations,
@@ -317,6 +361,36 @@ class TournamentRegistrationController extends Controller
     }
 
     // Declare team winner
+    // public function declareTeamWinner(Request $request, $tournamentId)
+    // {
+    //     $request->validate([
+    //         'winner_id' => 'required|exists:tournament_registrations,id',
+    //     ]);
+
+    //     $tournament = Tournament::findOrFail($tournamentId);
+
+    //     // Check if tournament already has a winner
+    //     if ($tournament->winner_team_id) {
+    //         return back()->with('error', 'Winner already declared for this tournament');
+    //     }
+
+    //     $winner = TournamentRegistration::find($request->winner_id);
+
+    //     // Update tournament with winner
+    //     $tournament->update([
+    //         'winner_team_id' => $winner->id,
+    //         'winner_team_name' => $winner->team_name ?? $winner->name,
+    //     ]);
+
+    //     // Update all team members status
+    //     TournamentRegistration::where('invite_link', $winner->invite_link)
+    //         ->where('type', 'team')
+    //         ->update(['status' => 1]);
+
+    //     return redirect()->back()->with('success', 'Winner declared successfully!');
+    // }
+    
+        // Declare team winner
     public function declareTeamWinner(Request $request, $tournamentId)
     {
         $request->validate([
@@ -337,11 +411,16 @@ class TournamentRegistrationController extends Controller
             'winner_team_id' => $winner->id,
             'winner_team_name' => $winner->team_name ?? $winner->name,
         ]);
-
-        // Update all team members status
+        
         TournamentRegistration::where('invite_link', $winner->invite_link)
             ->where('type', 'team')
-            ->update(['status' => 1]);
+            ->get()
+            ->each(function ($reg) {
+                if ($reg->status != 1) {
+                    $reg->status = 1;
+                    $reg->save();
+                }
+            });
 
         return redirect()->back()->with('success', 'Winner declared successfully!');
     }
@@ -358,26 +437,6 @@ class TournamentRegistrationController extends Controller
 
         return redirect()->back()->with('success', 'Winner reset successfully!');
     }
-
-    // In your TournamentRegistrationController.php
-
-    // View team members with prize distribution
-    // public function viewTeamMembers($teamId)
-    // {
-    //     $captain = TournamentRegistration::with(['user', 'tournament'])
-    //         ->findOrFail($teamId);
-
-    //     // Get all team members
-    //     $members = TournamentRegistration::where('invite_link', $captain->invite_link)
-    //         ->where('type', 'team')
-    //         ->with(['user'])
-    //         ->get();
-
-    //     $tournament = $captain->tournament;
-    //     $winnerTeamId = $tournament->winner_team_id;
-
-    //     return view('admin.tournament-registration.team-members', compact('captain', 'members', 'tournament', 'winnerTeamId'));
-    // }
     
     public function viewTeamMembers($teamId)
     {
@@ -407,94 +466,7 @@ class TournamentRegistrationController extends Controller
         'tournamentEnded',
         'tournamentOngoing'
     ));
-}
-
-    // Distribute prize (updated)
-    // public function distributePrize(Request $request, $tournamentId)
-    // {
-    //     $request->validate([
-    //         'distributions' => 'required|array|min:1',
-    //         'distributions.*.member_id' => 'required|exists:tournament_registrations,id',
-    //         'distributions.*.amount' => 'required|numeric|min:0',
-    //         'distributions.*.rank' => 'nullable|string|max:50',
-    //     ]);
-
-    //     $tournament = Tournament::findOrFail($tournamentId);
-    //     $totalPrize = $tournament->prize_pool ?? 0;
-
-    //     // Check if tournament has ended
-    //     $now = Carbon::now();
-    //     $endDate = Carbon::parse($tournament->end_date);
-    //     if ($now->lt($endDate)) {
-    //         return back()->with('error', 'Tournament has not ended yet. Prize distribution will be available after the tournament ends.');
-    //     }
-
-    //     // Get the winning team's captain registration to get invite_link
-    //     $winnerCaptain = TournamentRegistration::find($tournament->winner_team_id);
-    //     if (!$winnerCaptain) {
-    //         return back()->with('error', 'Winning team not found.');
-    //     }
-
-    //     DB::beginTransaction();
-    //     try {
-    //         $totalDistributed = 0;
-    //         $distributedCount = 0;
-
-    //         foreach ($request->distributions as $dist) {
-    //             if ($dist['amount'] > 0) {
-    //                 $member = TournamentRegistration::find($dist['member_id']);
-
-    //                 // Check if member belongs to this tournament
-    //                 if ($member->tournament_id != $tournamentId) {
-    //                     throw new \Exception('Invalid member selection');
-    //                 }
-
-    //                 // Check if member belongs to winning team using invite_link
-    //                 // Method 1: Compare invite_link with winner's invite_link
-    //                 if ($member->team_tag != $winnerCaptain->team_tag) {
-    //                     throw new \Exception('Member does not belong to winning team');
-    //                 }
-
-    //                 // OR Method 2: Alternative check using team_name (if you prefer)
-    //                 // if ($member->team_+tag != $tournament->winner_team_name) {
-    //                 //     throw new \Exception('Member does not belong to winning team');
-    //                 // }
-
-    //                 $member->update([
-    //                     'prize_amount' => $dist['amount'],
-    //                     'prize_rank' => $dist['rank'] ?? null,
-    //                     'prize_distributed_at' => now(),
-    //                     'is_prize_claimed' => false,
-    //                 ]);
-
-    //                 $totalDistributed += $dist['amount'];
-    //                 $distributedCount++;
-    //             }
-    //         }
-
-    //         if ($distributedCount === 0) {
-    //             throw new \Exception('Please distribute at least some amount to at least one member');
-    //         }
-
-    //         // Check if total distributed exceeds prize pool
-    //         if ($totalDistributed > $totalPrize) {
-    //             throw new \Exception('Total distributed amount (₹' . number_format($totalDistributed, 2) .
-    //                 ') exceeds prize pool (₹' . number_format($totalPrize, 2) . ')');
-    //         }
-
-    //         DB::commit();
-
-    //         $message = 'Prize distributed successfully! Total: ₹' . number_format($totalDistributed, 2);
-    //         if ($totalDistributed < $totalPrize) {
-    //             $message .= ' (Remaining: ₹' . number_format($totalPrize - $totalDistributed, 2) . ' unallocated)';
-    //         }
-
-    //         return redirect()->back()->with('success', $message);
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         return back()->with('error', 'Failed to distribute prize: ' . $e->getMessage());
-    //     }
-    // }
+    }
     
     public function distributePrize(Request $request, $tournamentId)
     {
@@ -637,12 +609,13 @@ class TournamentRegistrationController extends Controller
         $endDate = Carbon::parse($tournament->end_date);
 
         // Check if tournament is between start and end date (ongoing)
-        if ($now->between($startDate, $endDate)) {
-            return back()->with('error', 'Cannot remove members while tournament is ongoing (between start and end date)');
-        }
+        // if ($now->between($startDate, $endDate)) {
+        //     return back()->with('error', 'Cannot remove members while tournament is ongoing (between start and end date)');
+        // }
+        // dd($member);
         $member->delete();
-
-        return back()->with('success', 'Team member removed successfully!');
+        return redirect()->route('admin.tournament-registrations.team')
+                ->with('success', 'Player deleted successfully');
     }
 
     
@@ -667,9 +640,20 @@ class TournamentRegistrationController extends Controller
             ->pluck('user_id')
             ->toArray();
     
-        $availableUsers = User::whereNotIn('id', $registeredUserIds)
-            ->where('status', 1) // Only active users
+       // All active users not registered in this tournament
+        $potentialUsers = User::whereNotIn('id', $registeredUserIds)
+            ->where('status', 1)
             ->get(['id', 'first_name', 'last_name', 'email', 'mobile']);
+            
+         // FILTER: Remove users who overlap with another tournament
+        $availableUsers = $potentialUsers->filter(function ($user) use ($tournament) {
+            return !$this->hasOverlappingTournament(
+                $user->id,
+                $tournament->start_date,
+                $tournament->end_date,
+                $tournament->id
+            );
+        });
     
         // Get tournament status
         $now = now();
@@ -700,8 +684,14 @@ class TournamentRegistrationController extends Controller
         $tournament = $captain->tournament;
     
         // Check if tournament has started
-        if ($tournament->start_date <= now()) {
-            return back()->with('error', 'Cannot add members after tournament has started');
+        // if ($tournament->start_date <= now()) {
+        //     return back()->with('error', 'Cannot add members after tournament has started');
+        // }
+        
+        // OVERLAP CHECK
+        $user = User::findOrFail($request->user_id);
+        if ($this->hasOverlappingTournament($user->id, $tournament->start_date, $tournament->end_date, $tournament->id)) {
+            return back()->with('error', 'This user is already registered in another tournament that overlaps with this tournament\'s schedule.');
         }
     
         // Check if user already registered in this tournament
@@ -762,6 +752,79 @@ class TournamentRegistrationController extends Controller
     /**
      * Change team captain
      */
+    // public function changeCaptain(Request $request, $teamId)
+    // {
+    //     $request->validate([
+    //         'new_captain_id' => 'required|exists:tournament_registrations,id',
+    //     ]);
+    
+    //     $currentCaptain = TournamentRegistration::findOrFail($teamId);
+    //         // dd($currentCaptain);
+    //     // Verify this is a captain registration
+    //     // if ($currentCaptain->is_captain != 1) {
+    //     //     return back()->with('error', 'The specified team is not a captain registration.');
+    //     // }
+    
+    //     $newCaptain = TournamentRegistration::findOrFail($request->new_captain_id);
+    //         // dd($newCaptain,$currentCaptain);
+    //     // Verify they are in the same team
+    //     if ($newCaptain->team_name !== $currentCaptain->team_name || 
+    //         $newCaptain->tournament_id !== $currentCaptain->tournament_id) {
+    //         return back()->with('error', 'The selected user is not in the same team.');
+    //     }
+    
+    //     $tournament = $currentCaptain->tournament;
+    
+    //     // Check if tournament has started
+    //     if ($tournament->start_date <= now()) {
+    //         return back()->with('error', 'Cannot change captain after tournament has started');
+    //     }
+    
+    //     //  Store old captain info for email
+    //     $oldCaptainUser = $currentCaptain->user;
+    //     $newCaptainUser = $newCaptain->user;
+    
+    //     //  Demote current captain
+    //     $currentCaptain->is_captain = 0;
+    //     $currentCaptain->save();
+    
+    //     //  Promote new captain
+    //     $newCaptain->is_captain = 1;
+    //     $newCaptain->save();
+    
+    //     //  Send email to old captain (demoted)
+    //     if ($oldCaptainUser) {
+    //         try {
+    //             Mail::to($oldCaptainUser->email)->send(new TeamMemberNotification(
+    //                 $oldCaptainUser,
+    //                 $currentCaptain,
+    //                 $tournament,
+    //                 'captain_demoted'
+    //             ));
+    //         } catch (\Exception $e) {
+    //             \Log::error('Failed to send demotion email: ' . $e->getMessage());
+    //         }
+    //     }
+    
+    //     if ($newCaptainUser) {
+    //         try {
+    //             Mail::to($newCaptainUser->email)->send(new TeamMemberNotification(
+    //                 $newCaptainUser,
+    //                 $newCaptain,
+    //                 $tournament,
+    //                 'captain_promoted'
+    //             ));
+    //         } catch (\Exception $e) {
+    //             \Log::error('Failed to send promotion email: ' . $e->getMessage());
+    //         }
+    //     }
+    
+    //     return back()->with('success', 'Team captain has been changed successfully! Both members have been notified.');
+    // }
+    
+    /**
+     * Change team captain – ensures only one captain exists.
+     */
     public function changeCaptain(Request $request, $teamId)
     {
         $request->validate([
@@ -769,40 +832,34 @@ class TournamentRegistrationController extends Controller
         ]);
     
         $currentCaptain = TournamentRegistration::findOrFail($teamId);
-            // dd($currentCaptain);
-        // Verify this is a captain registration
-        // if ($currentCaptain->is_captain != 1) {
-        //     return back()->with('error', 'The specified team is not a captain registration.');
-        // }
-    
         $newCaptain = TournamentRegistration::findOrFail($request->new_captain_id);
-            // dd($newCaptain,$currentCaptain);
-        // Verify they are in the same team
-        if ($newCaptain->team_name !== $currentCaptain->team_name || 
+    
+        // Verify they belong to the same team and tournament
+        if ($newCaptain->team_name !== $currentCaptain->team_name ||
             $newCaptain->tournament_id !== $currentCaptain->tournament_id) {
             return back()->with('error', 'The selected user is not in the same team.');
         }
     
         $tournament = $currentCaptain->tournament;
     
-        // Check if tournament has started
+        // Prevent change if tournament already started
         if ($tournament->start_date <= now()) {
-            return back()->with('error', 'Cannot change captain after tournament has started');
+            return back()->with('error', 'Cannot change captain after tournament has started.');
         }
     
-        //  Store old captain info for email
-        $oldCaptainUser = $currentCaptain->user;
-        $newCaptainUser = $newCaptain->user;
+        // --- FIX: Reset ALL members of this team to NOT captain ---
+        TournamentRegistration::where('tournament_id', $tournament->id)
+            ->where('team_name', $currentCaptain->team_name)
+            ->update(['is_captain' => 0]);
     
-        //  Demote current captain
-        $currentCaptain->is_captain = 0;
-        $currentCaptain->save();
-    
-        //  Promote new captain
+        // --- Promote the new captain ---
         $newCaptain->is_captain = 1;
         $newCaptain->save();
     
-        //  Send email to old captain (demoted)
+        // --- (Optional) Send email notifications to both old and new captain ---
+        $oldCaptainUser = $currentCaptain->user;
+        $newCaptainUser = $newCaptain->user;
+    
         if ($oldCaptainUser) {
             try {
                 Mail::to($oldCaptainUser->email)->send(new TeamMemberNotification(
@@ -902,14 +959,6 @@ class TournamentRegistrationController extends Controller
 
         return redirect()->back()->with('success', 'Prize distribution reset successfully!');
     }
-
-
-
-
-
-
-
-
 
     // Show solo registrations with prize distribution
     public function soloRegistrations($tournamentId)
@@ -1035,15 +1084,15 @@ class TournamentRegistrationController extends Controller
 
             // Check if total distributed exceeds prize pool
             if ($totalDistributed > $totalPrize) {
-                throw new \Exception('Total distributed amount (₹' . number_format($totalDistributed, 2) .
-                    ') exceeds prize pool (₹' . number_format($totalPrize, 2) . ')');
+                throw new \Exception('Total distributed amount (QR' . number_format($totalDistributed, 2) .
+                    ') exceeds prize pool (QR' . number_format($totalPrize, 2) . ')');
             }
 
             DB::commit();
 
-            $message = 'Prize distributed successfully! Total: ₹' . number_format($totalDistributed, 2);
+            $message = 'Prize distributed successfully! Total: QR' . number_format($totalDistributed, 2);
             if ($totalDistributed < $totalPrize) {
-                $message .= ' (Remaining: ₹' . number_format($totalPrize - $totalDistributed, 2) . ' unallocated)';
+                $message .= ' (Remaining: QR' . number_format($totalPrize - $totalDistributed, 2) . ' unallocated)';
             }
 
             return redirect()->back()->with('success', $message);
@@ -1081,9 +1130,9 @@ class TournamentRegistrationController extends Controller
         $now = Carbon::now();
         $startDate = Carbon::parse($tournament->start_date);
 
-        if ($now->gte($startDate)) {
-            return back()->with('error', 'Cannot delete registration after tournament has started.');
-        }
+        // if ($now->gte($startDate)) {
+        //     return back()->with('error', 'Cannot delete registration after tournament has started.');
+        // }
 
         // Check if this is the winner
         if ($tournament->winner_team_id == $registration->id) {

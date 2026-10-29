@@ -80,9 +80,9 @@
                         {{-- Channel Name --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Channel Name <span class="text-danger">*</span></label>
-                            <input type="text" 
-                                   name="channel_name" 
-                                   class="form-control form-control-lg @error('channel_name') is-invalid @enderror" 
+                            <input type="text"
+                                   name="channel_name"
+                                   class="form-control form-control-lg @error('channel_name') is-invalid @enderror"
                                    value="{{ old('channel_name', $liveStream->channel_name) }}"
                                    placeholder="Enter channel name"
                                    required>
@@ -106,12 +106,13 @@
 
                         {{-- Video URL --}}
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Video URL</label>
-                            <input type="url" 
-                                   name="video_url" 
-                                   class="form-control form-control-lg @error('video_url') is-invalid @enderror" 
+                            <label class="form-label fw-semibold">Video URL <span class="text-danger">*</span></label>
+                            <input type="url"
+                                   name="video_url"
+                                   class="form-control form-control-lg @error('video_url') is-invalid @enderror"
                                    value="{{ old('video_url', $liveStream->video_url) }}"
-                                   placeholder="https://www.youtube.com/watch?v=...">
+                                   placeholder="https://www.youtube.com/watch?v=..."
+                                   required>
                             @error('video_url') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             @if($liveStream->video_url)
                                 <div class="mt-2">
@@ -128,24 +129,41 @@
                     <div class="col-12 col-lg-4">
                         <div class="card border shadow-sm">
                             <div class="card-body p-3 p-sm-4">
-                                {{-- Is Live --}}
+
+                                {{-- Start Time --}}
                                 <div class="mb-4">
-                                    <label class="form-label fw-semibold">Status</label>
-                                    <select name="is_live" class="form-select">
-                                        <option value="1" {{ old('is_live', $liveStream->is_live) ? 'selected' : '' }}>
-                                            <i class="bi bi-broadcast"></i> Live Now
-                                        </option>
-                                        <option value="0" {{ old('is_live', $liveStream->is_live) ? '' : 'selected' }}>
-                                            <i class="bi bi-clock"></i> Offline / Upcoming
-                                        </option>
-                                    </select>
+                                    <label class="form-label fw-semibold">
+                                        Start Time <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="datetime-local"
+                                           name="started_at"
+                                           class="form-control @error('started_at') is-invalid @enderror"
+                                           value="{{ old('started_at', $liveStream->started_at ? $liveStream->started_at->format('Y-m-d\TH:i') : '') }}"
+                                           required>
+                                    @error('started_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
+
+                                {{-- Viewer Count (commented out) --}}
+                                {{--
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">Viewer Count</label>
+                                    <input type="number"
+                                           name="viewer_count"
+                                           class="form-control @error('viewer_count') is-invalid @enderror"
+                                           value="{{ old('viewer_count', $liveStream->viewer_count) }}"
+                                           min="0">
+                                    @error('viewer_count') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                --}}
+
+                                {{-- Is Live dropdown REMOVED --}}
+                                {{-- Status ab automatically started_at ke base par decide hoga --}}
 
                                 <div class="d-grid gap-2">
                                     <button type="submit" class="btn btn-primary btn-sm">
                                         <i class="bi bi-check-circle me-1"></i> Update Stream
                                     </button>
-                                    <a href="{{ route('admin.livestream.index') }}" class="btn btn-outline-secondary ">
+                                    <a href="{{ route('admin.livestream.index') }}" class="btn btn-outline-secondary btn-sm">
                                         <i class="bi bi-x-circle me-1"></i> Cancel
                                     </a>
                                 </div>

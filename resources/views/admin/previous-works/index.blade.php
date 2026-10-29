@@ -8,9 +8,11 @@
         <h4 class="mb-0 h5 h4-sm fw-bold text-gray-800">
             <i class="bi bi-clock-history me-2"></i>Previous Work
         </h4>
+          @if (hasPermission('previous_work.create'))
         <a href="{{ route('admin.previous-works.create') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-circle me-1"></i> Add New
         </a>
+        @endif
     </div>
 
     @if(session('success'))
@@ -34,7 +36,9 @@
                             <th class="text-center" width="150">Category</th>
                             <th class="text-center" width="130">Date</th>
                             <th class="text-center" width="100">Status</th>
+                              @if (hasPermission('previous_work.edit') || hasPermission('previous_work.delete'))
                             <th class="text-center" width="150">Action</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -69,6 +73,7 @@
                                 
                                 <td>
                                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center align-items-center">
+                                         @if (hasPermission('previous_work.edit'))
                                         <a href="{{ route('admin.previous-works.edit', $work) }}"
                                            class="btn btn-warning btn-sm w-100 w-sm-auto"
                                            data-bs-toggle="tooltip"
@@ -76,7 +81,8 @@
                                             <i class="bi bi-pencil-square"></i>
                                             <span class="d-none d-sm-inline"> Edit</span>
                                         </a>
-                                        
+                                        @endif
+                                          @if (hasPermission('previous_work.delete'))
                                         <form action="{{ route('admin.previous-works.destroy', $work) }}"
                                               method="POST"
                                               class="d-inline w-100 w-sm-auto">
@@ -90,6 +96,7 @@
                                                 <span class="d-none d-sm-inline"> Delete</span>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

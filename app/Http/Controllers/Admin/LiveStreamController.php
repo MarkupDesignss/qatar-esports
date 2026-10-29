@@ -7,13 +7,34 @@ use App\Models\Game;
 use App\Models\LiveStream;
 use App\Models\Tournament;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class LiveStreamController extends Controller
 {
     public function index()
     {
-        $liveStreams = LiveStream::with('game', 'tournament')->latest()->paginate(10);
-        return view('admin.livestream.index', compact('liveStreams'));
+        $liveStreams = LiveStream::with('game', 'tournament')
+            ->latest('started_at')
+            ->paginate(10);
+
+        // Global counts (not just current page)
+        $liveNowCount   = LiveStream::whereNotNull('started_at')
+                                    ->where('started_at', '<=', now())
+                                    ->count();
+
+        $upcomingCount  = LiveStream::where(function ($q) {
+                                $q->whereNull('started_at')
+                                  ->orWhere('started_at', '>', now());
+                            })->count();
+
+        $platformsCount = LiveStream::distinct('platform')->count('platform');
+
+        return view('admin.livestream.index', compact(
+            'liveStreams',
+            'liveNowCount',
+            'upcomingCount',
+            'platformsCount'
+        ));
     }
 
     public function create()
@@ -31,13 +52,17 @@ class LiveStreamController extends Controller
             'channel_name'  => 'required|string|max:255',
             'language'      => 'required|string|max:50',
             'video_url'     => 'required|url',
-            'is_live'       => 'required|boolean',
             'viewer_count'  => 'nullable|integer',
-            'started_at'    => 'nullable|date',
-            'last_synced_at' => 'nullable|date',
+            'started_at'    => 'required|date',
         ]);
 
-        LiveStream::create($request->all());
+        $data = $request->except('is_live');
+
+        // Auto compute is_live from started_at
+        $data['is_live']        = Carbon::parse($request->started_at)->lte(now()) ? 1 : 0;
+        $data['last_synced_at'] = now();
+
+        LiveStream::create($data);
 
         return redirect()->route('admin.livestream.index')
             ->with('success', 'Live Stream added successfully.');
@@ -45,15 +70,17 @@ class LiveStreamController extends Controller
 
     public function edit($id)
     {
-        $liveStream = LiveStream::find($id);
-        $games = Game::all();
+        $liveStream  = LiveStream::findOrFail($id);
+        $games       = Game::all();
         $tournaments = Tournament::where('game_id', $liveStream->game_id)->get();
+
         return view('admin.livestream.edit', compact('liveStream', 'games', 'tournaments'));
     }
 
     public function update(Request $request, $id)
     {
-        $liveStream = LiveStream::find($id);
+        $liveStream = LiveStream::findOrFail($id);
+
         $request->validate([
             'tournament_id' => 'nullable|exists:tournaments,id',
             'game_id'       => 'required|exists:games,id',
@@ -61,13 +88,17 @@ class LiveStreamController extends Controller
             'channel_name'  => 'required|string|max:255',
             'language'      => 'required|string|max:50',
             'video_url'     => 'required|url',
-            'is_live'       => 'required|boolean',
             'viewer_count'  => 'nullable|integer',
-            'started_at'    => 'nullable|date',
-            'last_synced_at' => 'nullable|date',
+            'started_at'    => 'required|date',
         ]);
 
-        $liveStream->update($request->all());
+        $data = $request->except('is_live');
+
+        // Auto compute is_live from started_at
+        $data['is_live']        = Carbon::parse($request->started_at)->lte(now()) ? 1 : 0;
+        $data['last_synced_at'] = now();
+
+        $liveStream->update($data);
 
         return redirect()->route('admin.livestream.index')
             ->with('success', 'Live Stream updated successfully.');
@@ -75,8 +106,9 @@ class LiveStreamController extends Controller
 
     public function destroy($id)
     {
-        $liveStream = LiveStream::find($id);
+        $liveStream = LiveStream::findOrFail($id);
         $liveStream->delete();
+
         return redirect()->route('admin.livestream.index')
             ->with('success', 'Live Stream deleted successfully.');
     }

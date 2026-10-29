@@ -70,7 +70,7 @@
                                         {{ $map->is_active ? 'Active' : 'Inactive' }}
                                     </span>
                                 </td>
-
+                                @if (hasPermission('maps.edit') || hasPermission('maps.delete'))
                                 <td>
                                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center align-items-center">
                                         @if (hasPermission('maps.edit'))
@@ -96,7 +96,7 @@
                                         @endif
                                     </div>
                                 </td>
-
+                                @endif
                             </tr>
                         @empty
                             <tr>

@@ -38,14 +38,14 @@
                                     <td class="text-nowrap">
                                         <a href="{{ route('admin.tournament-registrations.team-detail', $tournament->id) }}"
                                             class="btn btn-sm btn-primary">View Details</a>
-                                             @if (hasPermission('participants.approve'))
-                                        @if ($tournament->format === 'team')
-                                            {{-- <a href="{{ route('admin.match.index', $tournament->id) }}"
-                                                class="btn btn-sm btn-success ms-1">
-                                                Manage Matches
-                                            </a> --}}
-                                        @endif
-                                        @endif
+                                             <!--@if (hasPermission('participants.approve'))-->
+                                        <!--@if ($tournament->format === 'team')-->
+                                        <!--    {{-- <a href="{{ route('admin.match.index', $tournament->id) }}"-->
+                                        <!--        class="btn btn-sm btn-success ms-1">-->
+                                        <!--        Manage Matches-->
+                                        <!--    </a> --}}-->
+                                        <!--@endif-->
+                                        <!--@endif-->
                                     </td>
                                 </tr>
                             @empty

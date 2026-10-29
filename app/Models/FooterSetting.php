@@ -18,6 +18,8 @@ class FooterSetting extends Model
         'contact_phone',
         'whatsapp_number',
         'contact_address',
+        'cta_heading',
+        'cta_quote'
     ];
 
     public static function getSettings()

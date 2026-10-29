@@ -96,6 +96,7 @@
                                 <td class="d-none d-md-table-cell small">
                                     {{ Str::limit($banner->description, 50) }}
                                 </td>
+                                 @if (hasPermission('banner.edit') || hasPermission('banner.delete'))
                                 <td>
                                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center align-items-center">
                                         {{-- Edit --}}
@@ -127,6 +128,7 @@
                                         @endif
                                     </div>
                                 </td>
+                                @endif
                             </tr>
                         @empty
                             <tr>

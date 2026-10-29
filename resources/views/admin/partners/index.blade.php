@@ -8,9 +8,11 @@
         <h4 class="mb-0 h5 h4-sm fw-bold text-gray-800">
             <i class="bi bi-building me-2"></i>Partners
         </h4>
+          @if (hasPermission('partners.create'))
         <a href="{{ route('admin.partners.create') }}" class="btn btn-primary btn-sm w-sm-auto">
             <i class="bi bi-plus-circle me-1"></i> Add Partner
         </a>
+        @endif
     </div>
 
     @if(session('success'))
@@ -74,7 +76,10 @@
                             <th class="text-center" width="80">Logo</th>
                             <th class="text-center">Name</th>
                             <th class="text-center" width="100">Status</th>
-                            <th class="text-center" width="150">Action</th>
+                            
+                            @if (hasPermission('partners.edit') || hasPermission('partners.delete'))
+                                <th class="text-center" width="150">Action</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -99,9 +104,10 @@
                                         {{ $partner->status ? 'Active' : 'Inactive' }}
                                     </span>
                                 </td>
-                                
+                                 @if (hasPermission('partners.edit') || hasPermission('partners.delete'))
                                 <td>
                                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center align-items-center">
+                                         @if (hasPermission('partners.edit'))
                                         <a href="{{ route('admin.partners.edit', $partner) }}"
                                            class="btn btn-warning btn-sm w-100 w-sm-auto"
                                            data-bs-toggle="tooltip"
@@ -109,7 +115,8 @@
                                             <i class="bi bi-pencil-square"></i>
                                             <span class="d-none d-sm-inline"> Edit</span>
                                         </a>
-
+                                        @endif
+                                         @if (hasPermission('partners.delete'))
                                         <form action="{{ route('admin.partners.destroy', $partner) }}"
                                               method="POST"
                                               class="d-inline w-100 w-sm-auto">
@@ -123,8 +130,10 @@
                                                 <span class="d-none d-sm-inline"> Delete</span>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
+                                @endif
                             </tr>
                         @empty
                             <tr>

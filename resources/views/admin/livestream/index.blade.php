@@ -50,9 +50,7 @@
             <div class="card shadow-sm h-100">
                 <div class="card-body p-2 p-sm-3">
                     <div class="text-xs fw-bold text-success text-uppercase mb-1 small">Live Now</div>
-                    <div class="h5 fw-bold mb-0">
-                        {{ $liveStreams->where('is_live', 1)->count() }}
-                    </div>
+                    <div class="h5 fw-bold mb-0">{{ $liveNowCount }}</div>
                 </div>
             </div>
         </div>
@@ -61,9 +59,7 @@
             <div class="card shadow-sm h-100">
                 <div class="card-body p-2 p-sm-3">
                     <div class="text-xs fw-bold text-warning text-uppercase mb-1 small">Upcoming</div>
-                    <div class="h5 fw-bold mb-0">
-                        {{ $liveStreams->where('is_live', 0)->count() }}
-                    </div>
+                    <div class="h5 fw-bold mb-0">{{ $upcomingCount }}</div>
                 </div>
             </div>
         </div>
@@ -72,9 +68,7 @@
             <div class="card shadow-sm h-100">
                 <div class="card-body p-2 p-sm-3">
                     <div class="text-xs fw-bold text-info text-uppercase mb-1 small">Platforms</div>
-                    <div class="h5 fw-bold mb-0">
-                        {{ $liveStreams->groupBy('platform')->count() }}
-                    </div>
+                    <div class="h5 fw-bold mb-0">{{ $platformsCount }}</div>
                 </div>
             </div>
         </div>
@@ -86,7 +80,7 @@
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
                 <h5 class="mb-0 fw-bold small">Streams List</h5>
                 <div class="d-flex gap-2 w-100 w-sm-auto">
-                    <input type="text" class="form-control form-control-sm" placeholder="Search streams..." 
+                    <input type="text" class="form-control form-control-sm" placeholder="Search streams..."
                            id="searchStreams" style="min-width: 150px; max-width: 250px;">
                     <button class="btn btn-outline-secondary btn-sm">
                         <i class="bi bi-search"></i>
@@ -106,7 +100,7 @@
                             <th>Channel</th>
                             <th class="d-none d-sm-table-cell">Platform</th>
                             <th class="d-none d-lg-table-cell">Language</th>
-                            <th class="text-center d-none d-sm-table-cell">Live</th>
+                            <th class="text-center d-none d-sm-table-cell">Status</th>
                             <th class="d-none d-md-table-cell">Video</th>
                             @if (hasPermission('livestream.edit') || hasPermission('livestream.delete'))
                             <th class="text-center">Action</th>
@@ -118,7 +112,7 @@
                         @forelse($liveStreams as $stream)
                             <tr>
                                 <td class="text-center">{{ $loop->iteration }}</td>
-                                
+
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <span class="small">{{ $stream->game->name ?? '-' }}</span>
@@ -152,10 +146,17 @@
                                     <span class="badge bg-secondary">{{ $stream->language }}</span>
                                 </td>
 
+                                {{-- Status: computed from started_at --}}
                                 <td class="text-center d-none d-sm-table-cell">
-                                    <span class="badge {{ $stream->is_live ? 'bg-success' : 'bg-danger' }} px-3 py-2">
-                                        {{ $stream->is_live ? 'Live' : 'Offline' }}
-                                    </span>
+                                    @if($stream->is_live)
+                                        <span class="badge bg-success px-3 py-2">
+                                            <i class="bi bi-broadcast"></i> Live
+                                        </span>
+                                    @else
+                                        <span class="badge bg-warning text-dark px-3 py-2">
+                                            <i class="bi bi-clock"></i> Upcoming
+                                        </span>
+                                    @endif
                                 </td>
 
                                 <td class="d-none d-md-table-cell">
@@ -171,25 +172,25 @@
                                 <td>
                                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center align-items-center">
                                         @if (hasPermission('livestream.edit'))
-                                        <a href="{{ route('admin.livestream.edit', $stream->id) }}" 
-                                           class="btn btn-warning btn-sm w-100 w-sm-auto" 
-                                           data-bs-toggle="tooltip" 
+                                        <a href="{{ route('admin.livestream.edit', $stream->id) }}"
+                                           class="btn btn-warning btn-sm w-100 w-sm-auto"
+                                           data-bs-toggle="tooltip"
                                            title="Edit Live Stream">
                                             <i class="bi bi-pencil-square"></i>
                                             <span class="d-none d-sm-inline"> Edit</span>
                                         </a>
                                         @endif
-                                        
+
                                         @if (hasPermission('livestream.delete'))
-                                        <form action="{{ route('admin.livestream.destroy', $stream->id) }}" 
-                                              method="POST" 
+                                        <form action="{{ route('admin.livestream.destroy', $stream->id) }}"
+                                              method="POST"
                                               class="d-inline w-100 w-sm-auto">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" 
-                                                    class="btn btn-danger btn-sm w-100 w-sm-auto" 
-                                                    onclick="return confirm('Are you sure you want to delete this live stream?')" 
-                                                    data-bs-toggle="tooltip" 
+                                            <button type="submit"
+                                                    class="btn btn-danger btn-sm w-100 w-sm-auto"
+                                                    onclick="return confirm('Are you sure you want to delete this live stream?')"
+                                                    data-bs-toggle="tooltip"
                                                     title="Delete Live Stream">
                                                 <i class="bi bi-trash"></i>
                                                 <span class="d-none d-sm-inline"> Delete</span>
@@ -198,9 +199,15 @@
                                         @endif
                                     </div>
                                     <div class="d-sm-none mt-1 text-center">
-                                        <span class="badge {{ $stream->is_live ? 'bg-success' : 'bg-danger' }} small">
-                                            {{ $stream->is_live ? 'Live' : 'Offline' }}
-                                        </span>
+                                        @if($stream->is_live)
+                                            <span class="badge bg-success small">
+                                                <i class="bi bi-broadcast"></i> Live
+                                            </span>
+                                        @else
+                                            <span class="badge bg-warning text-dark small">
+                                                <i class="bi bi-clock"></i> Upcoming
+                                            </span>
+                                        @endif
                                     </div>
                                 </td>
 

@@ -17,6 +17,7 @@ use App\Http\Controllers\API\UserProfileController;
 use App\Http\Controllers\API\FooterApiController;
 use App\Http\Controllers\API\ContactSettingApiController;
 use App\Http\Controllers\API\PageSettingApiController;
+use App\Http\Controllers\API\WebPageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,8 @@ use App\Http\Controllers\API\PageSettingApiController;
 |--------------------------------------------------------------------------
 */
 Route::post('/signup', [AuthController::class, 'signup']);
+Route::post('/verify-signup-otp', [AuthController::class, 'verifySignupOtp']);
+Route::post('/resend-signup-otp', [AuthController::class, 'resendSignupOtp']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -40,6 +43,8 @@ Route::get('/login', function () {
 Route::get('/all-teams', [TournamentRegistrationController::class, 'allTeams']);
 Route::get('/tournament-teams/{tournamentId}', [TournamentRegistrationController::class, 'teamsByTournament']);
 Route::get('/matches/details/{tournamentId}', [TournamentMatchController::class, 'allmatchDetails']);
+//Get Web Pages
+Route::get('web-pages', [WebPageController::class, 'list']);
 
 /*
 |--------------------------------------------------------------------------
@@ -112,14 +117,13 @@ Route::middleware('auth:sanctum')->group(function () {
     );
 
     // Update
-    Route::post(
-        '/user/profile/update',
-        [UserProfileController::class, 'update']
-    );
     Route::get('/user/profile', [UserProfileController::class, 'show']);
+    Route::post('/user/profile/update', [UserProfileController::class, 'update']);
+    Route::post('/user/profile/verify-email-otp', [UserProfileController::class, 'verifyEmailOtp']);
+    Route::post('/user/profile/resend-email-otp', [UserProfileController::class, 'resendEmailOtp']);
     
 
-// Route::get('/news', [NewsController::class, 'newsList']);
+   //Route::get('/news', [NewsController::class, 'newsList']);
     Route::post('news/{newsId}/like', [NewsController::class, 'toggleLike']);
     Route::post('news/{newsId}/bookmark', [NewsController::class, 'toggleBookmark']);
     
@@ -127,14 +131,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('dashboard-images', [DashboardImageApiController::class, 'index']);
     Route::get('user-registration-ranking', [DashboardImageApiController::class, 'userRegistrationRanking']);
     Route::get('tournament-prizes', [DashboardImageApiController::class, 'tournamentPrizeDistribution']);
-        Route::get('users/total-earnings', [DashboardImageApiController::class, 'totalEarningsPerUser']);
+    Route::get('users/total-earnings', [DashboardImageApiController::class, 'totalEarningsPerUser']);
 
-
-
-});
+    });
 
    
-Route::middleware('auth:sanctum')->prefix('tournaments')->group(function () {
+    Route::middleware('auth:sanctum')->prefix('tournaments')->group(function () {
     Route::post('{id}/register/solo', [TournamentRegistrationController::class, 'soloRegister']);
     Route::post('{id}/register/team', [TournamentRegistrationController::class, 'teamRegister']);
     Route::get('{id}/invite-link', [TournamentRegistrationController::class, 'generateInviteLink']);

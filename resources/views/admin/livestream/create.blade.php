@@ -74,9 +74,9 @@
                         {{-- Channel Name --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Channel Name <span class="text-danger">*</span></label>
-                            <input type="text" 
-                                   name="channel_name" 
-                                   class="form-control form-control-lg @error('channel_name') is-invalid @enderror" 
+                            <input type="text"
+                                   name="channel_name"
+                                   class="form-control form-control-lg @error('channel_name') is-invalid @enderror"
                                    value="{{ old('channel_name') }}"
                                    placeholder="Enter channel name"
                                    required>
@@ -100,12 +100,13 @@
 
                         {{-- Video URL --}}
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Video URL</label>
-                            <input type="url" 
-                                   name="video_url" 
-                                   class="form-control form-control-lg @error('video_url') is-invalid @enderror" 
+                            <label class="form-label fw-semibold">Video URL <span class="text-danger">*</span></label>
+                            <input type="url"
+                                   name="video_url"
+                                   class="form-control form-control-lg @error('video_url') is-invalid @enderror"
                                    value="{{ old('video_url') }}"
-                                   placeholder="https://www.youtube.com/watch?v=...">
+                                   placeholder="https://www.youtube.com/watch?v=..."
+                                   required>
                             @error('video_url') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             <small class="text-muted">YouTube, Twitch, or any streaming platform URL</small>
                         </div>
@@ -116,24 +117,39 @@
                     <div class="col-12 col-lg-4">
                         <div class="card border shadow-sm">
                             <div class="card-body p-3 p-sm-4">
-                                {{-- Is Live --}}
-                                <div class="mb-4">
-                                    <label class="form-label fw-semibold">Status</label>
-                                    <select name="is_live" class="form-select">
-                                        <option value="1" {{ old('is_live', '1') == '1' ? 'selected' : '' }}>
-                                            <i class="bi bi-broadcast"></i> Live Now
-                                        </option>
-                                        <option value="0" {{ old('is_live', '1') == '0' ? 'selected' : '' }}>
-                                            <i class="bi bi-clock"></i> Offline / Upcoming
-                                        </option>
-                                    </select>
+
+                                {{-- Start Time --}}
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        Start Time <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="datetime-local"
+                                           name="started_at"
+                                           class="form-control @error('started_at') is-invalid @enderror"
+                                           value="{{ old('started_at') }}"
+                                           required>
+                                    @error('started_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
+
+                                {{-- Viewer Count (commented out) --}}
+                                {{--
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Viewer Count</label>
+                                    <input type="number"
+                                           name="viewer_count"
+                                           class="form-control @error('viewer_count') is-invalid @enderror"
+                                           value="{{ old('viewer_count', 0) }}"
+                                           min="0"
+                                           placeholder="0">
+                                    @error('viewer_count') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                --}}
 
                                 <div class="d-grid gap-2">
                                     <button type="submit" class="btn btn-success btn-sm">
                                         <i class="bi bi-check-circle me-1"></i> Create Stream
                                     </button>
-                                    <button type="reset" class="btn btn-outline-secondary ">
+                                    <button type="reset" class="btn btn-outline-secondary btn-sm">
                                         <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
                                     </button>
                                 </div>
@@ -151,11 +167,12 @@
 <script>
     document.getElementById('game_id').addEventListener('change', function() {
         let gameId = this.value;
+        let tournamentSelect = document.getElementById('tournament_id');
+
         if (gameId) {
             fetch('/qatar-esports/admin/livestream/tournaments?game_id=' + gameId)
                 .then(res => res.json())
                 .then(data => {
-                    let tournamentSelect = document.getElementById('tournament_id');
                     tournamentSelect.innerHTML = '<option value="">Select Tournament</option>';
                     data.forEach(t => {
                         tournamentSelect.innerHTML += `<option value="${t.id}">${t.title}</option>`;
@@ -165,7 +182,6 @@
                     console.error('Error loading tournaments:', err);
                 });
         } else {
-            let tournamentSelect = document.getElementById('tournament_id');
             tournamentSelect.innerHTML = '<option value="">Select Tournament</option>';
         }
     });

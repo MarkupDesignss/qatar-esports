@@ -8,7 +8,7 @@
         <h4 class="mb-0 h5 h4-sm fw-bold text-gray-800">
             <i class="bi bi-envelope me-2"></i>Contact Page Settings
         </h4>
-        @if (hasPermission('settings.update'))
+        @if (hasPermission('contact_settings.edit'))
         <a href="{{ route('admin.contact-settings.edit') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-pencil me-1"></i> Edit Contact Settings
         </a>

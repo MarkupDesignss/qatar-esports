@@ -16,77 +16,75 @@ use App\Models\MatchHighlight;
 use App\Models\News;
 use App\Models\PreviousWork;
 use App\Models\Partner;
- use Carbon\Carbon;
- use App\Models\Logo;
+use App\Models\Logo;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\URL;
 
 
 class HomeController extends Controller
 {
-
-public function logo()
-{
-    try {
-        $logos = Logo::all()->map(function ($logo) {
-            $logo->image = URL::to('storage/' . $logo->image);
-            return $logo;
-        });
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Logo fetched',
-            'logo' => $logos
-        ], 200);
-
-    } catch (\Throwable $th) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Something went wrong',
-            'error' => $th->getMessage()
-        ], 500);
-    }
-}
-
-
-public function banners()
-{
-    try {
-        $banners = Banner::select('image', 'heading', 'description')
-            ->get()
-            ->map(function ($banner) {
-                $banner->image = URL::to('storage/' . $banner->image);
-                return $banner;
-            });
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Banners fetched',
-            'banners' => $banners
-        ], 200);
-
-    } catch (\Throwable $th) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Something went wrong',
-            'error' => $th->getMessage()
-        ], 500);
-    }
-}
-
-        public function challenge()
+    public function logo()
     {
         try {
-            $challenge = Challenge::select('welcome_heading', 'heading', 'content', 'image', 'video_url','thumbnail')->get();
+            $logos = Logo::all()->map(function ($logo) {
+                $logo->image = URL::to('storage/' . $logo->image);
+                return $logo;
+            });
+
             return response()->json([
                 'success' => true,
-                'message' => 'Matches fetched',
+                'message' => 'Logo fetched',
+                'logo'    => $logos
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error'   => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function banners()
+    {
+        try {
+            $banners = Banner::select('image', 'heading', 'description')
+                ->get()
+                ->map(function ($banner) {
+                    $banner->image = URL::to('storage/' . $banner->image);
+                    return $banner;
+                });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Banners fetched',
+                'banners' => $banners
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error'   => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function challenge()
+    {
+        try {
+            $challenge = Challenge::select('welcome_heading', 'heading', 'content', 'image', 'video_url', 'thumbnail')->get();
+            return response()->json([
+                'success'   => true,
+                'message'   => 'Matches fetched',
                 'challenge' => $challenge
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong',
-                'error' => $th->getMessage()
+                'error'   => $th->getMessage()
             ], 500);
         }
     }
@@ -94,7 +92,34 @@ public function banners()
     public function matchHighlights(Request $request)
     {
         try {
-            // 1. Match highlights query
+            $type = $request->get('type');
+
+            // 1. If type = news, return only news
+            if ($type === 'news') {
+                $newsItems = News::select(
+                    'id',
+                    'title',
+                    'description',
+                    'thumbnail',
+                    'created_at'
+                )
+                ->where('status', 1)
+                ->latest()
+                ->limit(10)
+                ->get()
+                ->map(function ($news) {
+                    $news->type = 'news';
+                    return $news;
+                });
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'News fetched',
+                    'matches' => $newsItems
+                ], 200);
+            }
+
+            // 2. Match highlights query
             $matchQuery = MatchHighlight::select(
                 'id',
                 'thumbnail',
@@ -106,13 +131,23 @@ public function banners()
                 'type'
             );
 
-            if ($request->filled('type') && $request->type !== 'all') {
-                $matchQuery->where('type', $request->type);
+            // If specific match type is requested
+            if ($request->filled('type') && $type !== 'all') {
+                $matchQuery->where('type', $type);
             }
 
             $matches = $matchQuery->latest()->get();
 
-            // 2. News query (active, latest, limited)
+            // 3. If specific match type is requested, return only matches
+            if ($request->filled('type') && $type !== 'all') {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Matches fetched',
+                    'matches' => $matches
+                ], 200);
+            }
+
+            // 4. News query for type = all / no type
             $newsItems = News::select(
                 'id',
                 'title',
@@ -125,25 +160,23 @@ public function banners()
             ->limit(10)
             ->get()
             ->map(function ($news) {
-                $news->type = 'news';   // add type for identification
+                $news->type = 'news';
                 return $news;
             });
 
-            // 3. Merge and force order: matches first, news last
+            // 5. Merge matches + news
             $mergedData = $matches->concat($newsItems)
                 ->map(function ($item) {
-                    // Add temporary sort flag: 0 = match, 1 = news
                     $item->sort_order = ($item->type === 'news') ? 1 : 0;
                     return $item;
                 })
-                ->sortBy('sort_order')          // 0 first, then 1
-                ->values()                      // reset keys after sorting
+                ->sortBy('sort_order')
+                ->values()
                 ->map(function ($item) {
-                    unset($item->sort_order);   // remove temporary flag
+                    unset($item->sort_order);
                     return $item;
                 });
 
-            // 4. Return exactly the same JSON structure
             return response()->json([
                 'success' => true,
                 'message' => 'Matches fetched',
@@ -165,16 +198,16 @@ public function banners()
 
         return response()->json([
             'success' => true,
-            'data' => $match
+            'data'    => $match
         ]);
     }
 
     public function welcomeSection()
     {
         return response()->json([
-            'image' => asset('welcome/image.jpg'),
+            'image'        => asset('welcome/image.jpg'),
             'imageContent' => 'Welcome to QEC',
-            'videoUrl' => 'https://youtube.com/xyz',
+            'videoUrl'     => 'https://youtube.com/xyz',
             'videoContent' => 'Watch our journey'
         ]);
     }
@@ -182,50 +215,49 @@ public function banners()
     public function featuredEvents()
     {
         try {
-            $events = FeaturedEvent::select('title', 'description', 'image','image_second', 'status')->get();
+            $events = FeaturedEvent::select('title', 'description', 'image', 'image_second', 'status')->get();
             return response()->json([
-                'success' => true,
-                'message' => 'Events fetched',
+                'success'  => true,
+                'message'  => 'Events fetched',
                 'partners' => $events
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong',
-                'error' => $th->getMessage()
+                'error'   => $th->getMessage()
             ], 500);
         }
     }
 
+    public function services()
+    {
+        try {
+            $services = Service::select(
+                    'title',
+                    'description',
+                    'image',
+                    'button_text',
+                    'button_link'
+                )
+                ->where('status', 1)
+                ->orderBy('sort_order')
+                ->get();
 
-public function services()
-{
-    try {
-        $services = Service::select(
-                'title',
-                'description',
-                'image',
-                'button_text',
-                'button_link'
-            )
-            ->where('status', 1)
-            ->orderBy('sort_order')
-            ->get();
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Services fetched',
+                'services' => $services
+            ], 200);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Services fetched',
-            'services' => $services
-        ], 200);
-
-    } catch (\Throwable $th) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Something went wrong',
-            'error' => $th->getMessage()
-        ], 500);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error'   => $th->getMessage()
+            ], 500);
+        }
     }
-}
 
     public function filterGames(Request $request)
     {
@@ -233,7 +265,7 @@ public function services()
 
         $query = Game::query()->where('status', 1);
 
-        if($gameName) {
+        if ($gameName) {
             $query->where('name', 'like', "%{$gameName}%");
         }
 
@@ -242,7 +274,7 @@ public function services()
         return response()->json($games);
     }
 
-     public function featuredTournaments(Request $request)
+    public function featuredTournaments(Request $request)
     {
         $gameSlug = $request->query('game');
         $gameId   = $request->query('game_id');
@@ -251,14 +283,12 @@ public function services()
             ->where('is_featured', true)
             ->where('visibility', 'published');
 
-        // Filter by game slug
         if ($gameSlug) {
             $query->whereHas('game', function ($q) use ($gameSlug) {
                 $q->where('slug', $gameSlug);
             });
         }
 
-        // Filter by game id
         if ($gameId) {
             $query->where('game_id', $gameId);
         }
@@ -283,16 +313,15 @@ public function services()
     public function eventsByPrize(Request $request)
     {
         $type = $request->query('type', 'upcoming');
-        $now = Carbon::now();
+        $now  = Carbon::now();
 
-        $query = Tournament::select('id','title','prize_pool','start_date','end_date');
+        $query = Tournament::select('id', 'title', 'prize_pool', 'start_date', 'end_date');
 
-        // Dynamic status filter
         if ($type == 'upcoming') {
             $query->where('start_date', '>', $now);
         } elseif ($type == 'live') {
             $query->where('start_date', '<=', $now)
-                ->where('end_date', '>=', $now);
+                  ->where('end_date', '>=', $now);
         } elseif ($type == 'completed') {
             $query->where('end_date', '<', $now);
         } else {
@@ -302,12 +331,10 @@ public function services()
         $events = $query->get();
 
         return response()->json([
-            'type' => $type,
+            'type'   => $type,
             'events' => $events
         ]);
     }
-
-
 
     public function previousWork()
     {
@@ -329,18 +356,19 @@ public function services()
             return response()->json([
                 'success' => true,
                 'message' => 'Previous works fetched successfully',
-                'data' => $works
+                'data'    => $works
             ], 200);
+
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong',
-                'error' => $th->getMessage()
+                'error'   => $th->getMessage()
             ], 500);
         }
     }
-    
-     public function previousworkShow($id)
+
+    public function previousworkShow($id)
     {
         try {
             $work = PreviousWork::select(
@@ -362,7 +390,6 @@ public function services()
                 ], 404);
             }
 
-            // Optional: format image URL
             if ($work->image) {
                 $work->image = asset('storage/' . $work->image);
             }
@@ -370,13 +397,14 @@ public function services()
             return response()->json([
                 'success' => true,
                 'message' => 'Previous work fetched successfully',
-                'data' => $work
+                'data'    => $work
             ], 200);
+
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong',
-                'error' => $th->getMessage()
+                'error'   => $th->getMessage()
             ], 500);
         }
     }
@@ -386,49 +414,34 @@ public function services()
         try {
             $partners = Partner::select('name', 'logo', 'sort_order', 'status')->get();
             return response()->json([
-                'success' => true,
-                'message' => 'Partners fetched',
+                'success'  => true,
+                'message'  => 'Partners fetched',
                 'partners' => $partners
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong',
-                'error' => $th->getMessage()
+                'error'   => $th->getMessage()
             ], 500);
         }
     }
 
-    //Popular Live Games API
-    // public function popularLiveGames()
-    // {
-    //     $now = Carbon::now()->format('Y-m-d H:i:s');
-    //     $today = Carbon::today()->format('Y-m-d');
-
-    //     $games = Game::select('id', 'name', 'logo')
-    //         ->withCount([
-    //             'tournaments as live_count' => function ($q) use ($now, $today) {
-    //                 $q->whereRaw(
-    //                     "CONCAT(start_date, ' ', start_time) <= ?",
-    //                     [$now]
-    //                 )
-    //                 ->where('end_date', '>=', $today);
-    //             }
-    //         ])
-    //         ->orderByDesc('live_count')
-    //         ->get();
-
-    //     return response()->json(['data'=>$games]);
-    // }
-
+    /* =========================================================
+     |  POPULAR LIVE GAMES
+     |  Live = started_at <= now()  (is_live column ignored)
+     | ========================================================= */
     public function popularLiveGames()
     {
         $games = LiveStream::query()
-            ->where('is_live', 1)
+            ->live()   // ✅ scope: started_at NOT NULL AND started_at <= now()
 
-            // Tournament must be published
-            ->whereHas('tournament', function ($q) {
-                $q->where('visibility', 'published');
+            // Tournament must be published (agar tournament_id null hai to wo bhi consider karne ke liye niche dekho)
+            ->where(function ($q) {
+                $q->whereHas('tournament', function ($t) {
+                    $t->where('visibility', 'published');
+                })
+                ->orWhereNull('tournament_id');
             })
 
             ->selectRaw('
@@ -444,12 +457,12 @@ public function services()
             ->get()
             ->map(function ($row) {
                 return [
-                    'id'            => $row->game?->id,
-                    'name'          => $row->game?->name,
-                    'logo'          => $row->game?->logo,
-                    'banner'          => $row->game?->banner,
-                    'live_streams'  => (int) $row->live_streams,
-                    'viewer_count'  => (int) $row->total_viewers,
+                    'id'           => $row->game?->id,
+                    'name'         => $row->game?->name,
+                    'logo'         => $row->game?->logo,
+                    'banner'       => $row->game?->banner,
+                    'live_streams' => (int) $row->live_streams,
+                    'viewer_count' => (int) $row->total_viewers,
                 ];
             });
 
@@ -459,55 +472,66 @@ public function services()
         ]);
     }
 
-
-    //Popular Live Streams API
+    /* =========================================================
+     |  POPULAR LIVE STREAMS
+     |  Live = started_at <= now()  (is_live column ignored)
+     | ========================================================= */
     public function popularLiveStreams(Request $request)
     {
         $gameId = $request->query('game_id'); // optional filter
     
         $streams = LiveStream::query()
-            ->where('is_live', true)
+            // ✅ Live + Upcoming dono
+            ->whereNotNull('started_at')
     
             // Optional game filter
             ->when($gameId, function ($q) use ($gameId) {
                 $q->where('game_id', $gameId);
             })
     
-            // Include related data (tournament & game)
+            // Related data
             ->with([
                 'tournament:id,title,slug,status,timezone',
                 'game:id,name'
             ])
+    
+            // Sort: Live pehle → phir upcoming (nearest first)
+            ->orderByRaw('started_at <= ? DESC', [now()])
             ->orderByDesc('viewer_count')
+            ->orderBy('started_at', 'asc')
             ->limit(20)
             ->get();
     
         return response()->json([
             'status' => true,
-            'data' => $streams->map(function ($stream) {
+            'data'   => $streams->map(function ($stream) {
+                $isLive = (bool) $stream->is_live; // model accessor se fresh value
+    
                 return [
-                    // Tournament may be null – handle gracefully
                     'tournament' => $stream->tournament ? [
                         'title'  => $stream->tournament->title,
                         'slug'   => $stream->tournament->slug,
                         'status' => $stream->tournament->status,
-                    ] : null, // or provide default values
+                    ] : null,
     
                     'game' => $stream->game ? [
                         'id'   => $stream->game->id,
                         'name' => $stream->game->name,
                     ] : null,
     
-                    'platform'     => $stream->platform,
-                    'channel'      => $stream->channel_name,
-                    'language'     => $stream->language,
-                    'viewer_count' => $stream->viewer_count,
-                    'is_live'      => (bool) $stream->is_live,
-                    'video_url'    => $stream->video_url,
+                    'platform'           => $stream->platform,
+                    'channel'            => $stream->channel_name,
+                    'language'           => $stream->language,
+                    'viewer_count'       => $stream->viewer_count,
+                    'start_time'         => $stream->started_at?->toIso8601String(),
+                    'start_time_display' => $stream->started_at?->format('d M Y, h:i A'),
+                    'is_live'            => $isLive,
+                    'starts_in_seconds'  => $isLive
+                                                ? 0
+                                                : (int) now()->diffInSeconds($stream->started_at, false),
+                    'video_url'          => $stream->video_url,
                 ];
             })
         ]);
     }
-
-
 }

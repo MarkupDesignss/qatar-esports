@@ -58,8 +58,8 @@ class PageSetting extends Model
             ]
         );
     }
-    
-      /**
+
+    /**
      * Get the cookie policy page (singleton).
      */
     public static function getCookie()
@@ -67,9 +67,54 @@ class PageSetting extends Model
         return self::firstOrCreate(
             ['slug' => 'cookie-policy'],
             [
-                'type'    => 'terms',
-                'title'   => 'Terms of Service',
-                'content' => 'Default Terms content...',
+                'type'    => 'cookie',
+                'title'   => 'Cookie Policy',
+                'content' => 'Default Cookie Policy content...',
+            ]
+        );
+    }
+
+    /**
+     * Get the signup page (singleton).
+     */
+    public static function getSignup()
+    {
+        return self::firstOrCreate(
+            ['slug' => 'signup'],
+            [
+                'type'    => 'signup',
+                'title'   => 'Sign Up',
+                'content' => 'Default Signup page content...',
+            ]
+        );
+    }
+
+    /**
+     * Get the signin page (singleton).
+     */
+    public static function getSignin()
+    {
+        return self::firstOrCreate(
+            ['slug' => 'signin'],
+            [
+                'type'    => 'signin',
+                'title'   => 'Sign In',
+                'content' => 'Default Signin page content...',
+            ]
+        );
+    }
+
+    /**
+     * Get the "Sign Up To Esports QEC" page (singleton).
+     */
+    public static function getSignupEsports()
+    {
+        return self::firstOrCreate(
+            ['slug' => 'sign-up-to-esports-qec'],
+            [
+                'type'    => 'signup_esports',
+                'title'   => 'Sign Up To Esports QEC',
+                'content' => 'Default Sign Up To Esports QEC content...',
             ]
         );
     }

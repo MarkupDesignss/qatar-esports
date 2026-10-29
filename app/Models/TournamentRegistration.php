@@ -47,7 +47,18 @@ class TournamentRegistration extends Model
     }
     
     public function team()
-{
-    return $this->belongsTo(Team::class, 'team_id'); // adjust foreign key if needed
-}
+    {
+        return $this->belongsTo(Team::class, 'team_id'); // adjust foreign key if needed
+    }
+    
+      protected static function booted()
+    {
+        static::deleted(function ($registration) {
+            if ($registration->status == 1) {
+                $registration->tournament()
+                    ->where('registered_participants', '>', 0)
+                    ->decrement('registered_participants');
+            }
+        });
+    }
 }

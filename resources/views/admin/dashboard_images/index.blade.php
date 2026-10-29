@@ -8,10 +8,12 @@
         <h4 class="mb-0 h5 h4-sm fw-bold text-gray-800">
             <i class="bi bi-images me-2"></i>Dashboard Images
         </h4>
+          @if (hasPermission('dashboard_images.create'))
         @if(empty($images))
         <a href="{{ route('admin.dashboard-images.create') }}" class="btn btn-primary btn-sm w-100 w-sm-auto">
             <i class="bi bi-plus-circle me-1"></i> Add Images
         </a>
+        @endif
         @endif
     </div>
 
@@ -47,7 +49,9 @@
                             <tr>
                                 <th class="text-center">Image 1</th>
                                 <th class="text-center">Image 2</th>
+                                  @if (hasPermission('dashboard_images.edit') ||  hasPermission('dashboard_images.delete'))
                                 <th class="text-center" width="200">Actions</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -70,8 +74,10 @@
                                         <small class="text-muted mt-1">Image 2</small>
                                     </div>
                                 </td>
+                                  @if (hasPermission('dashboard_images.edit') || hasPermission('dashboard_images.delete'))
                                 <td>
                                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center align-items-center">
+                                         @if (hasPermission('dashboard_images.edit'))
                                         <a href="{{ route('admin.dashboard-images.edit', $images->id) }}" 
                                            class="btn btn-warning btn-sm w-100 w-sm-auto"
                                            data-bs-toggle="tooltip"
@@ -79,7 +85,8 @@
                                             <i class="bi bi-pencil-square"></i>
                                             <span class="d-none d-sm-inline"> Edit</span>
                                         </a>
-
+                                        @endif
+                                          @if (hasPermission('dashboard_images.delete'))
                                         <form action="{{ route('admin.dashboard-images.destroy', $images->id) }}" 
                                               method="POST" 
                                               class="d-inline w-100 w-sm-auto">
@@ -93,8 +100,10 @@
                                                 <span class="d-none d-sm-inline"> Delete</span>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
+                                @endif
                             </tr>
                         </tbody>
                     </table>

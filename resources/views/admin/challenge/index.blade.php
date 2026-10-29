@@ -8,9 +8,11 @@
         <h4 class="mb-0 h5 h4-sm fw-bold text-gray-800">
             <i class="bi bi-trophy me-2"></i>Challenges
         </h4>
+          @if (hasPermission('challenge_section.create'))
         <a href="{{ route('admin.challenge.create') }}" class="btn btn-primary btn-sm w-sm-auto">
             <i class="bi bi-plus-circle me-1"></i> Add Challenge
         </a>
+        @endif
     </div>
 
     @if(session('success'))
@@ -33,7 +35,9 @@
                             <th class="text-center">Heading</th>
                             <th class="text-center" width="100">Image</th>
                             <th class="text-center" width="120">Video</th>
+                              @if (hasPermission('challenge_section.edit') || hasPermission('challenge_section.delete'))
                             <th class="text-center" width="150">Action</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -71,9 +75,10 @@
                                         <span class="text-muted small">-</span>
                                     @endif
                                 </td>
-                                
+                                  @if (hasPermission('challenge_section.edit') || hasPermission('challenge_section.delete'))
                                 <td>
                                     <div class="d-flex flex-column flex-sm-row gap-1 justify-content-center align-items-center">
+                                      @if (hasPermission('challenge_section.edit'))
                                         <a href="{{ route('admin.challenge.edit', $challenge->id) }}"
                                            class="btn btn-warning btn-sm w-100 w-sm-auto"
                                            data-bs-toggle="tooltip"
@@ -81,22 +86,25 @@
                                             <i class="bi bi-pencil-square"></i>
                                             <span class="d-none d-sm-inline"> Edit</span>
                                         </a>
-
-                                        <form action="{{ route('admin.challenge.destroy', $challenge->id) }}"
-                                              method="POST"
-                                              class="d-inline w-100 w-sm-auto">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-danger btn-sm w-100 w-sm-auto"
-                                                    data-bs-toggle="tooltip"
-                                                    title="Delete Challenge"
-                                                    onclick="return confirm('Are you sure you want to delete this challenge?')">
-                                                <i class="bi bi-trash"></i>
-                                                <span class="d-none d-sm-inline"> Delete</span>
-                                            </button>
-                                        </form>
+                                        @endif
+                                         @if (hasPermission('challenge_section.delete'))
+                                            <form action="{{ route('admin.challenge.destroy', $challenge->id) }}"
+                                                  method="POST"
+                                                  class="d-inline w-100 w-sm-auto">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-danger btn-sm w-100 w-sm-auto"
+                                                        data-bs-toggle="tooltip"
+                                                        title="Delete Challenge"
+                                                        onclick="return confirm('Are you sure you want to delete this challenge?')">
+                                                    <i class="bi bi-trash"></i>
+                                                    <span class="d-none d-sm-inline"> Delete</span>
+                                                </button>
+                                            </form>
+                                            @endif
                                     </div>
                                 </td>
+                                @endif
                             </tr>
                         @empty
                             <tr>

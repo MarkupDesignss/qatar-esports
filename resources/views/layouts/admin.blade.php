@@ -767,19 +767,34 @@
                 <i class="nav-icon bi bi-speedometer2"></i>
                 <span class="nav-label">Dashboard</span>
             </a>
-            @if (hasPermission('users.view'))
-                <a href="{{ route('admin.moderators.index') }}"
-                    class="nav-item {{ request()->routeIs('admin.moderators.*') ? 'active' : '' }}">
-                    <i class="nav-icon bi bi-person-gear"></i>
-                    <span class="nav-label">Moderators</span>
-                </a>
-            @endif
-            @if (hasPermission('roles.view'))
-                <a href="{{ route('admin.permissions.index') }}"
-                    class="nav-item {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
-                    <i class="nav-icon bi bi-shield-lock"></i>
-                    <span class="nav-label">Permissions</span>
-                </a>
+            <!--@if (hasPermission('users.view'))-->
+            <!--    <a href="{{ route('admin.moderators.index') }}"-->
+            <!--        class="nav-item {{ request()->routeIs('admin.moderators.*') ? 'active' : '' }}">-->
+            <!--        <i class="nav-icon bi bi-person-gear"></i>-->
+            <!--        <span class="nav-label">Moderators</span>-->
+            <!--    </a>-->
+            <!--@endif-->
+            <!--@if (hasPermission('roles.view'))-->
+            <!--    <a href="{{ route('admin.permissions.index') }}"-->
+            <!--        class="nav-item {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">-->
+            <!--        <i class="nav-icon bi bi-shield-lock"></i>-->
+            <!--        <span class="nav-label">Permissions</span>-->
+            <!--    </a>-->
+            <!--@endif-->
+            @if (auth('admin')->user()?->role === 'admin')
+    
+                    <a href="{{ route('admin.moderators.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.moderators.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-person-gear"></i>
+                        <span class="nav-label">Moderators</span>
+                    </a>
+
+                    <a href="{{ route('admin.permissions.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-shield-lock"></i>
+                        <span class="nav-label">Permissions</span>
+                    </a>
+
             @endif
             @if (hasPermission('users.view'))
                 <a href="{{ route('admin.user.index') }}"
@@ -855,66 +870,167 @@
                 <a href="{{ route('admin.banners.index') }}"
                     class="nav-item {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
                     <i class="nav-icon bi bi-images"></i>
-                    <span class="nav-label">Banners</span>
+                    <span class="nav-label">Home Banners</span>
                 </a>
             @endif
-            <div
-                class="nav-item dropdown-sidebar {{ request()->is('admin/partners*', 'admin/events*', 'admin/challenge*', 'admin/matches*', 'admin/previous-works*', 'admin/services*', 'admin/news*', 'admin/about*', 'admin/dashboard-image*') ? 'open' : '' }}">
-                <a href="javascript:void(0)" class="nav-link dropdown-toggle">
-                    <i class="nav-icon bi bi-layout-text-window"></i>
-                    <span class="nav-label">Content Management</span>
-                </a>
-                <div class="dropdown-menu-sidebar">
-                    <a href="{{ route('admin.partners.index') }}"
-                        class=" dropdown-item {{ request()->is('admin/partners*') ? 'active' : '' }}">
-                        Partners
-                    </a>
-                    <a href="{{ route('admin.dashboard-images.index') }}"
-                        class="dropdown-item {{ request()->is('admin/dashboard-images*') ? 'active' : '' }}">
-                        Dashboard Images
-                    </a>
-                    <a href="{{ route('admin.challenge.index') }}"
-                        class="dropdown-item {{ request()->is('admin/challenge*') ? 'active' : '' }}">
-                        Challenge Section
-                    </a>
-                    <a href="{{ route('admin.matches.index') }}"
-                        class="dropdown-item {{ request()->is('admin/matches*') ? 'active' : '' }}">
-                        Match Highlights
-                    </a>
-                    <a href="{{ route('admin.previous-works.index') }}"
-                        class="dropdown-item {{ request()->is('admin/previous-works*') ? 'active' : '' }}">
-                        Previous work
-                    </a>
-                    <a href="{{ route('admin.services.index') }}"
-                        class="dropdown-item {{ request()->is('admin/services*') ? 'active' : '' }}">
-                        Our services
-                    </a>
-                    <a href="{{ route('admin.news-types.index') }}"
-                        class="dropdown-item {{ request()->routeIs('admin.news-types.*') ? 'active' : '' }}">
-                        News Types
-                    </a>
-                    <a href="{{ route('admin.news.index') }}"
-                        class="dropdown-item {{ request()->is('admin/news*') ? 'active' : '' }}">
-                        News
-                    </a>
-                    <a href="{{ route('admin.about.index') }}"
-                        class="dropdown-item {{ request()->is('admin/about*') ? 'active' : '' }}">
-                        About Us
-                    </a>
-                    <a href="{{ route('admin.contact-settings.index') }}"
-                        class="dropdown-item {{ request()->is('admin/contact-settings*') ? 'active' : '' }}">
-                        Contact Settings
-                    </a>
-                    <a href="{{ route('admin.pages.index') }}"
-                        class="dropdown-item {{ request()->is('admin/pages*') ? 'active' : '' }}">
-                        Legal Pages
-                    </a>
-                    <a href="{{ route('admin.footer.index') }}"
-                        class="dropdown-item {{ request()->is('admin/footer*') ? 'active' : '' }}">
-                        Footer Settings
-                    </a>
-                </div>
-            </div>
+            <!--<div-->
+            <!--    class="nav-item dropdown-sidebar {{ request()->is('admin/partners*', 'admin/events*', 'admin/challenge*', 'admin/matches*', 'admin/previous-works*', 'admin/services*', 'admin/news*', 'admin/about*', 'admin/dashboard-image*') ? 'open' : '' }}">-->
+            <!--    <a href="javascript:void(0)" class="nav-link dropdown-toggle">-->
+            <!--        <i class="nav-icon bi bi-layout-text-window"></i>-->
+            <!--        <span class="nav-label">Content Management</span>-->
+            <!--    </a>-->
+            <!--    <div class="dropdown-menu-sidebar">-->
+            <!--        <a href="{{ route('admin.partners.index') }}"-->
+            <!--            class=" dropdown-item {{ request()->is('admin/partners*') ? 'active' : '' }}">-->
+            <!--            Partners-->
+            <!--        </a>-->
+            <!--        <a href="{{ route('admin.dashboard-images.index') }}"-->
+            <!--            class="dropdown-item {{ request()->is('admin/dashboard-images*') ? 'active' : '' }}">-->
+            <!--            Dashboard Images-->
+            <!--        </a>-->
+            <!--        <a href="{{ route('admin.web.page.list') }}"-->
+            <!--                class="dropdown-item {{ request()->routeIs('admin.web.page.*') ? 'active' : '' }}">-->
+            <!--                <span>Page Banners</span>-->
+            <!--        </a>-->
+            <!--        <a href="{{ route('admin.challenge.index') }}"-->
+            <!--            class="dropdown-item {{ request()->is('admin/challenge*') ? 'active' : '' }}">-->
+            <!--            Challenge Section-->
+            <!--        </a>-->
+            <!--        <a href="{{ route('admin.matches.index') }}"-->
+            <!--            class="dropdown-item {{ request()->is('admin/matches*') ? 'active' : '' }}">-->
+            <!--            Match Highlights-->
+            <!--        </a>-->
+            <!--        <a href="{{ route('admin.previous-works.index') }}"-->
+            <!--            class="dropdown-item {{ request()->is('admin/previous-works*') ? 'active' : '' }}">-->
+            <!--            Previous work-->
+            <!--        </a>-->
+            <!--        <a href="{{ route('admin.services.index') }}"-->
+            <!--            class="dropdown-item {{ request()->is('admin/services*') ? 'active' : '' }}">-->
+            <!--            Our services-->
+            <!--        </a>-->
+            <!--        <a href="{{ route('admin.news-types.index') }}"-->
+            <!--            class="dropdown-item {{ request()->routeIs('admin.news-types.*') ? 'active' : '' }}">-->
+            <!--            News Types-->
+            <!--        </a>-->
+            <!--        <a href="{{ route('admin.news.index') }}"-->
+            <!--            class="dropdown-item {{ request()->is('admin/news*') ? 'active' : '' }}">-->
+            <!--            News-->
+            <!--        </a>-->
+            <!--        <a href="{{ route('admin.about.index') }}"-->
+            <!--            class="dropdown-item {{ request()->is('admin/about*') ? 'active' : '' }}">-->
+            <!--            About Us-->
+            <!--        </a>-->
+            <!--        <a href="{{ route('admin.contact-settings.index') }}"-->
+            <!--            class="dropdown-item {{ request()->is('admin/contact-settings*') ? 'active' : '' }}">-->
+            <!--            Contact Settings-->
+            <!--        </a>-->
+            <!--        <a href="{{ route('admin.pages.index') }}"-->
+            <!--            class="dropdown-item {{ request()->is('admin/pages*') ? 'active' : '' }}">-->
+            <!--            Legal Pages-->
+            <!--        </a>-->
+                   
+            <!--        <a href="{{ route('admin.footer.index') }}"-->
+            <!--            class="dropdown-item {{ request()->is('admin/footer*') ? 'active' : '' }}">-->
+            <!--            Footer Settings-->
+            <!--        </a>-->
+            <!--    </div>-->
+            <!--</div>-->
+            <div class="nav-item dropdown-sidebar {{ request()->is('admin/partners*', 'admin/events*', 'admin/web-pages*','admin/challenge*', 'admin/matches*', 'admin/previous-works*', 'admin/services*', 'admin/news*', 'admin/about*', 'admin/dashboard-image*','admin/contact-settings*','admin/pages*','admin/footer*','admin.web-pages.*') ? 'open' : '' }}">
+       @if ( hasPermission('about.view') || hasPermission('service.view') || hasPermission('partners.view') || hasPermission('news_type.view') || hasPermission('news.view') || hasPermission('match_highlights.view') || hasPermission('challenge_section.view') || hasPermission('previous_work.view') || hasPermission('page_banners.view') || hasPermission('dashboard_images.view') || hasPermission('contact_settings.view') || hasPermission('legal.view') || hasPermission('footer.view') )
+        <a href="javascript:void(0)" class="nav-link dropdown-toggle">
+            <i class="nav-icon bi bi-layout-text-window"></i>
+            <span class="nav-label">Content Management</span>
+        </a>
+        @endif
+    <div class="dropdown-menu-sidebar">
+
+        {{-- ========== SECTION 1: STATIC PAGES ========== --}}
+        @if (hasPermission('about.view'))
+        <a href="{{ route('admin.about.index') }}"
+            class="dropdown-item {{ request()->is('admin/about*') ? 'active' : '' }}">
+            About Us
+        </a>
+        @endif
+        @if (hasPermission('service.view'))
+        <a href="{{ route('admin.services.index') }}"
+            class="dropdown-item {{ request()->is('admin/services*') ? 'active' : '' }}">
+            Our Services
+        </a>
+        @endif
+         @if (hasPermission('partners.view'))
+        <a href="{{ route('admin.partners.index') }}"
+            class="dropdown-item {{ request()->is('admin/partners*') ? 'active' : '' }}">
+            Partners
+        </a>
+        @endif
+        {{-- ========== SECTION 2: NEWS & EVENTS ========== --}}
+          @if (hasPermission('news_type.view'))
+        <a href="{{ route('admin.news-types.index') }}"
+            class="dropdown-item {{ request()->routeIs('admin.news-types.*') ? 'active' : '' }}">
+            News Types
+        </a>
+        @endif
+         @if (hasPermission('news.view'))
+        <a href="{{ route('admin.news.index') }}"
+            class="dropdown-item {{ request()->is('admin/news*') ? 'active' : '' }}">
+            News
+        </a>
+        @endif
+         @if (hasPermission('match_highlights.view'))
+        <a href="{{ route('admin.matches.index') }}"
+            class="dropdown-item {{ request()->is('admin/matches*') ? 'active' : '' }}">
+            Match Highlights
+        </a>
+        @endif
+        {{-- ========== SECTION 3: PORTFOLIO / CHALLENGE ========== --}}
+         @if (hasPermission('challenge_section.view'))
+        <a href="{{ route('admin.challenge.index') }}"
+            class="dropdown-item {{ request()->is('admin/challenge*') ? 'active' : '' }}">
+            Challenge Section
+        </a>
+        @endif
+         @if (hasPermission('previous_work.view'))
+        <a href="{{ route('admin.previous-works.index') }}"
+            class="dropdown-item {{ request()->is('admin/previous-works*') ? 'active' : '' }}">
+            Previous Work
+        </a>
+        @endif
+
+        {{-- ========== SECTION 4: MEDIA / BANNERS ========== --}}
+         @if (hasPermission('page_banners.view'))
+        <a href="{{ route('admin.web.page.list') }}"
+            class="dropdown-item {{ request()->routeIs('admin.web.page.*') ? 'active' : '' }}">
+            Page Banners
+        </a>
+        @endif
+         @if (hasPermission('dashboard_images.view'))
+        <a href="{{ route('admin.dashboard-images.index') }}"
+            class="dropdown-item {{ request()->is('admin/dashboard-images*') ? 'active' : '' }}">
+            Dashboard Images
+        </a>
+        @endif
+
+        {{-- ========== SECTION 5: SETTINGS ========== --}}
+         @if (hasPermission('contact_settings.view'))
+        <a href="{{ route('admin.contact-settings.index') }}"
+            class="dropdown-item {{ request()->is('admin/contact-settings*') ? 'active' : '' }}">
+            Contact Settings
+        </a>
+        @endif
+         @if (hasPermission('legal.view'))
+        <a href="{{ route('admin.pages.index') }}"
+            class="dropdown-item {{ request()->is('admin/pages*') ? 'active' : '' }}">
+            Legal Pages
+        </a>
+        @endif
+         @if (hasPermission('footer.view'))
+        <a href="{{ route('admin.footer.index') }}"
+            class="dropdown-item {{ request()->is('admin/footer*') ? 'active' : '' }}">
+            Footer Settings
+        </a>
+        @endif
+    </div>
+</div>
 
             <div class="nav-divider"></div>
             <form method="POST" action="{{ route('admin.logout') }}" class="nav-item">

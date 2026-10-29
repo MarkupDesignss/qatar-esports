@@ -64,13 +64,13 @@
                             </small>
                         </div>
 
-                        {{-- Content (CKEditor) --}}
+                        {{-- Content with CKEditor Super Build --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Content <span class="text-danger">*</span></label>
                             <textarea name="content" 
                                       id="content" 
                                       rows="15" 
-                                      class="form-control @error('content') is-invalid @enderror"
+                                      class="ckeditor form-control @error('content') is-invalid @enderror"
                                       required>{{ old('content', $page->content) }}</textarea>
                             @error('content') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
@@ -106,14 +106,14 @@
                                 </div>
 
                                 {{-- Page Preview Link --}}
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Preview</label>
-                                    <div class="border rounded p-2 bg-light">
-                                        <a href="{{ url('/' . $page->slug) }}" target="_blank" class="text-decoration-none small">
-                                            <i class="bi bi-eye me-1"></i> View Page
-                                        </a>
-                                    </div>
-                                </div>
+                                <!--<div class="mb-3">-->
+                                <!--    <label class="form-label fw-semibold">Preview</label>-->
+                                <!--    <div class="border rounded p-2 bg-light">-->
+                                <!--        <a href="{{ url('/' . $page->slug) }}" target="_blank" class="text-decoration-none small">-->
+                                <!--            <i class="bi bi-eye me-1"></i> View Page-->
+                                <!--        </a>-->
+                                <!--    </div>-->
+                                <!--</div>-->
 
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-primary btn-sm">
@@ -133,54 +133,139 @@
     </div>
 </div>
 
-{{-- CKEditor 5 CDN --}}
-<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let editorInstance;
-        const textarea = document.getElementById('content');
-
-        if (textarea) {
-            ClassicEditor.create(textarea, {
-                toolbar: [
-                    'heading', 'bold', 'italic', 'underline', 'strikethrough',
-                    'bulletedList', 'numberedList', 'link', 'blockQuote',
-                    'undo', 'redo', 'removeFormat'
-                ]
-            }).then(editor => {
-                editorInstance = editor;
-            }).catch(error => console.error(error));
-        }
-
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function() {
-                if (editorInstance) {
-                    editorInstance.updateSourceElement();
-                }
-            });
-        }
-    });
-</script>
+{{-- CKEditor 5 Super Build (Same as all other admin forms) --}}
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.js"></script>
+<link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.css">
 
 <style>
-    /* Responsive CKEditor */
+.ck-content ul,
+.ck-editor__editable ul {
+    list-style-type: disc !important;
+    padding-left: 2rem !important;
+    margin: 0.5rem 0 !important;
+}
+.ck-content ol,
+.ck-editor__editable ol {
+    list-style-type: decimal !important;
+    padding-left: 2rem !important;
+    margin: 0.5rem 0 !important;
+}
+.ck-content li,
+.ck-editor__editable li {
+    display: list-item !important;
+    margin-bottom: 0.25rem !important;
+}
+.ck-content ul ul, .ck-editor__editable ul ul { list-style-type: circle !important; }
+.ck-content ul ul ul, .ck-editor__editable ul ul ul { list-style-type: square !important; }
+.ck-content ol ol, .ck-editor__editable ol ol { list-style-type: lower-alpha !important; }
+.ck-content ol ol ol, .ck-editor__editable ol ol ol { list-style-type: lower-roman !important; }
+
+/* Responsive CKEditor */
+.ck-editor__editable {
+    min-height: 300px;
+    max-height: 500px;
+}
+@media (max-width: 576px) {
     .ck-editor__editable {
-        min-height: 300px;
-        max-height: 500px;
+        min-height: 200px;
+        max-height: 350px;
     }
-    @media (max-width: 576px) {
-        .ck-editor__editable {
-            min-height: 200px;
-            max-height: 350px;
-        }
-        .ck-toolbar {
-            flex-wrap: wrap !important;
-        }
-        .ck-toolbar .ck-toolbar__items {
-            flex-wrap: wrap !important;
-        }
+    .ck-toolbar {
+        flex-wrap: wrap !important;
     }
+    .ck-toolbar .ck-toolbar__items {
+        flex-wrap: wrap !important;
+    }
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ===== CKEditor Super Build Init =====
+    const editors = [];
+
+    document.querySelectorAll('.ckeditor').forEach(textarea => {
+        CKEDITOR.ClassicEditor
+            .create(textarea, {
+                toolbar: {
+                    items: [
+                        'heading', '|',
+                        'bold', 'italic', 'underline', 'strikethrough', '|',
+                        'bulletedList', 'numberedList', '|',
+                        'alignment', '|',
+                        'link', 'blockQuote', 'insertTable', '|',
+                        'undo', 'redo'
+                    ],
+                    shouldNotGroupWhenFull: true
+                },
+                heading: {
+                    options: [
+                        { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                        { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                        { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                        { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+                    ]
+                },
+                list: {
+                    properties: {
+                        styles: true,
+                        startIndex: true,
+                        reversed: true
+                    }
+                },
+                alignment: {
+                    options: ['left', 'center', 'right', 'justify']
+                },
+                language: 'en',
+                removePlugins: [
+                    'RealTimeCollaborativeComments',
+                    'RealTimeCollaborativeTrackChanges',
+                    'RealTimeCollaborativeRevisionHistory',
+                    'RealTimeCollaborativeEditing',
+                    'PresenceList',
+                    'Comments',
+                    'CommentsArchive',
+                    'TrackChanges',
+                    'TrackChangesData',
+                    'TrackChangesEditing',
+                    'RevisionHistory',
+                    'Collaboration',
+                    'Pagination',
+                    'WProofreader',
+                    'MathType',
+                    'SlashCommand',
+                    'Template',
+                    'DocumentOutline',
+                    'FormatPainter',
+                    'TableOfContents',
+                    'ExportWord',
+                    'ExportPdf',
+                    'ImportWord',
+                    'AIAssistant',
+                    'OpenAI',
+                    'CaseChange',
+                    'MultiLevelList',
+                    'PasteFromOfficeEnhanced',
+                    'PasteFromOffice'
+                ]
+            })
+            .then(editor => {
+                editors.push(editor);
+                textarea.setAttribute('data-editor-initialized', 'true');
+            })
+            .catch(error => {
+                console.error('CKEditor init error:', error);
+            });
+    });
+
+    // ===== Sync editors before submit =====
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', () => {
+            editors.forEach(editor => editor.updateSourceElement());
+        });
+    }
+});
+</script>
 @endsection

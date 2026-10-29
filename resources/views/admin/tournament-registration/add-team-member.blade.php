@@ -36,22 +36,25 @@
                             <form action="{{ route('admin.team-registrations.add-member', $captain->id) }}" method="POST">
                                 @csrf
                                 
+                                {{-- ===== SEARCHABLE USER DROPDOWN (DATALIST) ===== --}}
                                 <div class="mb-3">
-                                    <label for="user_id" class="form-label">Select User <span class="text-danger">*</span></label>
-                                    <select name="user_id" id="user_id" class="form-select @error('user_id') is-invalid @enderror" required>
-                                        <option value="">-- Select a user --</option>
+                                    <label for="user_search" class="form-label">Search & Select User <span class="text-danger">*</span></label>
+                                    
+                                    {{-- Hidden field stores the actual user ID --}}
+                                    <input type="hidden" name="user_id" id="user_id" required>
+
+                                    {{-- Search input with datalist --}}
+                                    <input list="user_list" id="user_search" class="form-control @error('user_id') is-invalid @enderror"
+                                           placeholder="Type name, email, or ID..." autocomplete="off">
+                                    
+                                    <datalist id="user_list">
                                         @foreach($availableUsers as $user)
-                                            <option value="{{ $user->id }}">
-                                                {{ $user->first_name }} {{ $user->last_name }} 
-                                                ({{ $user->email }})
-                                                @if($user->mobile)
-                                                    - {{ $user->mobile }}
-                                                @endif
-                                            </option>
+                                            <option value="#{{ $user->id }} – {{ $user->first_name }} {{ $user->last_name }} ({{ $user->email }})">
                                         @endforeach
-                                    </select>
+                                    </datalist>
+
                                     @error('user_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
 
@@ -144,4 +147,24 @@
         </div>
     </div>
 </div>
+
+{{-- ===== JAVASCRIPT TO EXTRACT ID FROM DATALIST ===== --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var searchInput = document.getElementById('user_search');
+        var hiddenId = document.getElementById('user_id');
+
+        if (searchInput && hiddenId) {
+            searchInput.addEventListener('input', function() {
+                var val = this.value;
+                var match = val.match(/^#(\d+)\s–/); // matches "#42 –"
+                if (match) {
+                    hiddenId.value = match[1];
+                } else {
+                    hiddenId.value = ''; // clear if user typed invalid
+                }
+            });
+        }
+    });
+</script>
 @endsection

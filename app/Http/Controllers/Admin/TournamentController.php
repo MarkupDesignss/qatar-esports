@@ -131,11 +131,12 @@ class TournamentController extends Controller
             'start_date'           => 'required|date',
             'end_date'             => 'required|date|after:start_date',
 
-            'entry_fee'            => 'required|numeric|min:0',
+            'entry_fee'            => 'nullable|numeric|min:0',
             'prize_pool'           => 'required|numeric|min:0',
             'max_participants'     => 'nullable|integer|min:1',
             'description'          => 'nullable|string',
-            'rules'                => 'nullable|string',
+            //'rules'                => 'nullable|string',
+            'rules'                => 'nullable|file|mimes:pdf|max:5120',
             'social_links'         => 'nullable|array',
             'social_links.*'       => 'nullable|url|max:255',
             'stream_url'           => 'nullable|url|max:255',
@@ -157,6 +158,8 @@ class TournamentController extends Controller
         $data['registration_end']   = Carbon::parse($data['registration_end']);
         $data['start_date']         = Carbon::parse($data['start_date']);
         $data['end_date']           = Carbon::parse($data['end_date']);
+        // Entry Fee default 0 if blank
+        $data['entry_fee'] = $request->filled('entry_fee') ? $request->input('entry_fee') : 0;
 
         $data['created_by'] = auth()->id();
 
@@ -167,6 +170,10 @@ class TournamentController extends Controller
 
         if ($request->hasFile('banner')) {
             $data['banner'] = $request->file('banner')->store('tournaments', 'public');
+        }
+        
+        if ($request->hasFile('rules')) {
+        $data['rules'] = $request->file('rules')->store('tournaments/rulebooks', 'public');
         }
 
         $socialLinks = $request->input('social_links', []);
@@ -192,23 +199,8 @@ class TournamentController extends Controller
             ->with('success', 'Tournament created successfully.');
     }
 
-
-    // public function edit(Tournament $tournament)
-    // {
-    //     $games = Game::orderBy('name')->get();
-    //     return view('admin.tournaments.edit', compact('tournament', 'games'));
-    // }
     public function edit(Tournament $tournament)
     {
-        // Prevent editing after registration has closed
-        // if (
-        //     !$tournament->is_registration_open ||
-        //     now()->greaterThan($tournament->registration_end)
-        // ) {
-        //     return redirect()
-        //         ->route('admin.tournaments.index')
-        //         ->with('error', 'Tournament cannot be updated after registration has closed.');
-        // }
 
         $games = Game::orderBy('name')->get();
 
@@ -240,7 +232,7 @@ class TournamentController extends Controller
             'prize_pool'           => 'nullable|numeric|min:0',
             'max_participants'     => 'nullable|integer|min:1',
             'description'          => 'nullable|string',
-            'rules'                => 'nullable|string',
+            'rules'                => 'nullable|file|mimes:pdf|max:5120',
             'social_links'         => 'nullable|array',
             'social_links.*'       => 'nullable|url|max:255',
             'stream_url'           => 'nullable|url|max:255',
@@ -269,6 +261,11 @@ class TournamentController extends Controller
         if (!empty($data['end_date'])) {
             $data['end_date'] = Carbon::parse($data['end_date']);
         }
+        
+        // Entry Fee default 0 if blank
+        if ($request->has('entry_fee')) {
+            $data['entry_fee'] = $request->filled('entry_fee') ? $request->input('entry_fee') : 0;
+        }
 
         /* ---------- File Handling ---------- */
         if ($request->hasFile('logo')) {
@@ -283,6 +280,13 @@ class TournamentController extends Controller
                 Storage::disk('public')->delete($tournament->banner);
             }
             $data['banner'] = $request->file('banner')->store('tournaments', 'public');
+        }
+        
+        if ($request->hasFile('rules')) {
+            if ($tournament->rules && Storage::disk('public')->exists($tournament->rules)) {
+                Storage::disk('public')->delete($tournament->rules);
+            }
+            $data['rules'] = $request->file('rules')->store('tournaments/rulebooks', 'public');
         }
 
         $tournament->update($data);

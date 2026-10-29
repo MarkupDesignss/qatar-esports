@@ -22,6 +22,8 @@ class FooterApiController extends Controller
                 'tagline'         => $footer->tagline,
                 'description'     => $footer->description,
                 'copyright_text'  => $footer->copyright_text,
+                'cta_heading'  => $footer->cta_heading,
+                'cta_quote'  => $footer->cta_quote,
                 'discord_url'     => $footer->discord_url,
                 'youtube_url'     => $footer->youtube_url,
                 'instagram_url'   => $footer->instagram_url,

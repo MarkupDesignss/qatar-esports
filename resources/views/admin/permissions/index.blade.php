@@ -83,7 +83,6 @@
 
                 </div>
 
-                @if (hasPermission('roles.edit'))
                     <div class="card-footer bg-white py-3">
                         <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-3">
                             <button class="btn btn-primary btn-sm">
@@ -98,7 +97,6 @@
                             </button>
                         </div>
                     </div>
-                @endif
 
             </form>
 

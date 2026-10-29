@@ -3,17 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class LiveStream extends Model
 {
-    use HasFactory;
-
-    protected $table = 'live_streams';
-
-    /**
-     * Mass assignable fields
-     */
     protected $fillable = [
         'tournament_id',
         'game_id',
@@ -27,44 +19,55 @@ class LiveStream extends Model
         'last_synced_at',
     ];
 
-    /**
-     * Type casting
-     */
     protected $casts = [
-        'is_live' => 'boolean',
-        'viewer_count' => 'integer',
-        'started_at' => 'datetime',
+        'started_at'     => 'datetime',
         'last_synced_at' => 'datetime',
+        'is_live'        => 'boolean',
     ];
 
-    /**
-     * Relationships
-     */
-    public function tournament()
+    /* ---------------- Computed is_live based on started_at ---------------- */
+
+    public function getIsLiveAttribute($value): bool
     {
-        return $this->belongsTo(Tournament::class);
+        return $this->started_at && $this->started_at->lte(now());
     }
+
+    public function getStatusAttribute(): string
+    {
+        return $this->is_live ? 'live' : 'upcoming';
+    }
+
+    /* ---------------- Scopes ---------------- */
+
+    public function scopeLive($query)
+    {
+        return $query->whereNotNull('started_at')
+                     ->where('started_at', '<=', now());
+    }
+
+    public function scopeUpcoming($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('started_at')
+              ->orWhere('started_at', '>', now());
+        });
+    }
+    
+    // Model mein
+    public function scopeLiveOrUpcoming($query)
+    {
+        return $query->whereNotNull('started_at');
+    }
+
+    /* ---------------- Relations ---------------- */
 
     public function game()
     {
         return $this->belongsTo(Game::class);
     }
 
-    /**
-     * Accessor: Generate embed URL dynamically
-     * (Recommended instead of hardcoding in DB)
-     */
-    // public function getEmbedUrlAttribute()
-    // {
-    //     if ($this->platform === 'twitch') {
-    //         $parent = config('app.frontend_domain'); // example: app.yoursite.com
-    //         return "https://player.twitch.tv/?channel={$this->channel_name}&parent={$parent}";
-    //     }
-
-    //     if ($this->platform === 'youtube') {
-    //         return "https://www.youtube.com/embed/{$this->channel_name}";
-    //     }
-
-    //     return null;
-    // }
+    public function tournament()
+    {
+        return $this->belongsTo(Tournament::class);
+    }
 }

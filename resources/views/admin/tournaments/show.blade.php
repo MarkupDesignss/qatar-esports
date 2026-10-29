@@ -123,9 +123,15 @@
                     <div>{!! $tournament->description ?? '-' !!}</div>
                 </div>
                 <div class="mb-3">
-                    <strong>Rules:</strong>
-                    <div>{!! $tournament->rules ?? '-' !!}</div>
+                <strong>Rules:</strong>
+                <div>
+                    <a href="{{ asset('storage/' . $tournament->rules) }}" 
+                       target="_blank" 
+                       class="btn btn-sm btn-danger mt-1">
+                        <i class="fas fa-file-pdf me-1"></i> View Rulebook PDF
+                    </a>
                 </div>
+            </div>
                 </div>
             </div>
         </div>

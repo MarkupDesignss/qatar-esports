@@ -99,12 +99,24 @@
                                         @endphp
                                         <span class="badge bg-info">{{ $count }}</span>
                                     </td>
+                                    <!--<td>-->
+                                    <!--    @if ($team->team_logo)-->
+                                    <!--        <img src="{{ asset('storage/' . $team->team_logo) }}"-->
+                                    <!--            alt="{{ $team->team_name }}" style="max-width: 50px; height: auto;">-->
+                                    <!--    @else-->
+                                    <!--        --->
+                                    <!--    @endif-->
+                                    <!--</td>-->
                                     <td>
-                                        @if ($team->team_logo)
+                                        @if ($team->team_logo && $team->team_logo != 'abc')
                                             <img src="{{ asset('storage/' . $team->team_logo) }}"
-                                                alt="{{ $team->team_name }}" style="max-width: 50px; height: auto;">
+                                                alt="{{ $team->team_name }}" style="max-width: 50px; height: auto; border-radius: 50%;">
                                         @else
-                                            -
+                                            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="12" cy="12" r="12" fill="#E2E8F0"/>
+                                                <circle cx="12" cy="9" r="4" fill="#94A3B8"/>
+                                                <path d="M4 20C4 16.6863 6.68629 14 10 14H14C17.3137 14 20 16.6863 20 20V22H4V20Z" fill="#94A3B8"/>
+                                            </svg>
                                         @endif
                                     </td>
                                     <td>

@@ -11,9 +11,11 @@
                 </h2>
                 <p class="text-muted mb-0 small d-none d-sm-block">Manage all your tournaments from one place</p>
             </div>
+             @if (hasPermission('tournament.create'))
             <a href="{{ route('admin.tournaments.create') }}" class="btn btn-primary btn-sm w-sm-auto">
                 <i class="fas fa-plus me-1"></i> Add Tournament
             </a>
+            @endif
         </div>
 
         {{-- Stats Cards --}}
@@ -151,7 +153,10 @@
                                 <th class="text-center">Status</th>
                                 <th class="text-center">Visibility</th>
                                 <th class="text-center" style="min-width: 140px;">Start Date</th>
+                                 @if (hasPermission('tournament.view') || hasPermission('tournament.edit') || hasPermission('tournament.export') || hasPermission('tournament.freatured'))
+
                                 <th class="text-center" style="min-width: 220px;">Actions</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -210,6 +215,7 @@
                                     </td>
 
                                     {{-- Actions - All 5 buttons in single line on large screens --}}
+                                     @if (hasPermission('tournament.view') || hasPermission('tournament.edit') || hasPermission('tournament.export') || hasPermission('tournament.freatured'))
                                     <td>
                                         <div class="d-flex flex-wrap flex-lg-nowrap gap-1 justify-content-center">
                                             {{-- View --}}
@@ -271,6 +277,7 @@
                                             @endif
                                         </div>
                                     </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr>

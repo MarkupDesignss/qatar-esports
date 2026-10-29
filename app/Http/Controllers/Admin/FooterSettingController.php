@@ -39,6 +39,8 @@ class FooterSettingController extends Controller
             'contact_phone' => 'nullable|string|max:50',
             'whatsapp_number' => 'nullable|string|max:50',
             'contact_address' => 'nullable|string|max:500',
+            'cta_heading' => 'nullable|string|max:255',
+            'cta_quote' => 'nullable|string|max:500',
         ]);
 
         $settings->update($data);
