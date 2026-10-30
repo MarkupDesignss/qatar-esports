@@ -94,7 +94,7 @@ class ModeratorController extends Controller
                         </table>
     
                         <p style='margin:25px 0;'>
-                            <a href='http://13.60.216.189/admin/login'
+                            <a href='http://13.63.124.252/admin/login'
                                style='background:#162E38;color:#fff;padding:12px 24px;text-decoration:none;border-radius:5px;display:inline-block;'>
                                 Login
                             </a>

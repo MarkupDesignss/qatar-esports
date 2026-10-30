@@ -392,7 +392,7 @@ class TournamentMatchController extends Controller
     public function listMatches($tournamentId)
     {
         try {
-            $baseUrl = 'http://13.60.216.189/storage';
+            $baseUrl = 'http://13.63.124.252/storage';
 
             $tournament = Tournament::findOrFail($tournamentId);
 

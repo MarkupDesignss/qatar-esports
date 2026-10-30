@@ -38,7 +38,7 @@ class DashboardImageApiController extends Controller
 public function userRegistrationRanking(Request $request)
 {
     $type = $request->query('type'); // solo | team | null
-    $baseUrl = 'http://13.60.216.189/storage';
+    $baseUrl = 'http://13.63.124.252/storage';
 
     $query = TournamentRegistration::query()
         ->select([
@@ -326,7 +326,7 @@ public function userRegistrationRanking(Request $request)
     // public function totalEarningsPerUser(Request $request)
     // {
     //     $filter = $request->query('filter'); // day | week | month | null
-    //     $baseUrl = 'http://13.60.216.189/storage';
+    //     $baseUrl = 'http://13.63.124.252/storage';
 
     //     $query = DB::table('tournament_registrations')
     //       ->select(
@@ -391,7 +391,7 @@ public function userRegistrationRanking(Request $request)
     
             $userId = $user->id;
             $filter = $request->query('filter'); // day | week | month | null
-            $baseUrl = 'http://13.60.216.189/storage';
+            $baseUrl = 'http://13.63.124.252/storage';
     
             // 2. Query for this specific user only
             $query = DB::table('tournament_registrations as tr')
