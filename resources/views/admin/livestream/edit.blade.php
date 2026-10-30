@@ -182,7 +182,7 @@
     document.getElementById('game_id').addEventListener('change', function() {
         let gameId = this.value;
         if (gameId) {
-            fetch('/qatar-esports/admin/livestream/tournaments?game_id=' + gameId)
+            fetch('/admin/livestream/tournaments?game_id=' + gameId)
                 .then(res => res.json())
                 .then(data => {
                     let tournamentSelect = document.getElementById('tournament_id');

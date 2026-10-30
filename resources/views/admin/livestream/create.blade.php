@@ -170,7 +170,7 @@
         let tournamentSelect = document.getElementById('tournament_id');
 
         if (gameId) {
-            fetch('/qatar-esports/admin/livestream/tournaments?game_id=' + gameId)
+            fetch('/admin/livestream/tournaments?game_id=' + gameId)
                 .then(res => res.json())
                 .then(data => {
                     tournamentSelect.innerHTML = '<option value="">Select Tournament</option>';

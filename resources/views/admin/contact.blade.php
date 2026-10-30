@@ -542,7 +542,7 @@ $(document).ready(function() {
     // Function to update status via AJAX
     function updateStatus(contactId, status, resolution) {
         $.ajax({
-            url: '/qatar-esports/admin/contacts/' + contactId + '/status',
+            url: '/admin/contacts/' + contactId + '/status',
             method: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',
