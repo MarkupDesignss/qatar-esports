@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
         
-        URL::forceScheme('https');
+        //URL::forceScheme('https');
         
         // Redirect unauthenticated admin requests to the admin login route
         AuthenticateMiddleware::redirectUsing(function ($request) {
