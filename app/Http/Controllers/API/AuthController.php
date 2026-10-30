@@ -355,6 +355,81 @@ class AuthController extends Controller
     /**
      * LOGIN
      */
+    // public function login(Request $request)
+    // {
+    //     try {
+    //         $request->validate([
+    //             'email'    => 'required|email',
+    //             'password' => 'required'
+    //         ]);
+
+    //         Log::info('Login attempt', ['email' => $request->email]);
+
+    //         $user = User::where('email', $request->email)->first();
+
+    //         if (!$user) {
+    //             Log::warning('Login - user not found', ['email' => $request->email]);
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Invalid email address'
+    //             ], 422);
+    //         }
+
+    //         // Email verification check
+    //         if (!$user->email_verified) {
+    //             Log::warning('Login - email not verified', ['email' => $request->email]);
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Please verify your email first.',
+    //             ], 422);
+    //         }
+
+    //         if ($user->status != 1) {
+    //             Log::warning('Login - account inactive', ['email' => $request->email]);
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Account is inactive, kindly contact to admin.'
+    //             ], 422);
+    //         }
+
+    //         if (!Hash::check($request->password, $user->password)) {
+    //             Log::warning('Login - wrong password', ['email' => $request->email]);
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Incorrect password.'
+    //             ], 422);
+    //         }
+
+    //         $token = $user->createToken('auth_token')->plainTextToken;
+
+    //         Log::info('Login successful', ['user_id' => $user->id]);
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'token'   => $token,
+    //             'user'    => $user
+    //         ]);
+
+    //     } catch (\Illuminate\Validation\ValidationException $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Validation failed',
+    //             'errors'  => $e->errors()
+    //         ], 422);
+    //     } catch (\Throwable $e) {
+    //         Log::error('Login FAILED', [
+    //             'message' => $e->getMessage(),
+    //             'file'    => $e->getFile(),
+    //             'line'    => $e->getLine(),
+    //         ]);
+
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Login failed',
+    //             'error'   => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
     public function login(Request $request)
     {
         try {
@@ -371,8 +446,8 @@ class AuthController extends Controller
                 Log::warning('Login - user not found', ['email' => $request->email]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid email address'
-                ], 422);
+                    'message' => 'User not found with this email address.'
+                ], 404);
             }
 
             // Email verification check
@@ -426,7 +501,6 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Login failed',
-                'error'   => $e->getMessage(),
             ], 500);
         }
     }
